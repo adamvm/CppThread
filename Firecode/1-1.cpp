@@ -1,3 +1,8 @@
+/*
+Write a function that takes an input string - str and returns true if all the characters
+in the string are unique, false if there is even a single repeated character.
+*/
+
 #include <iostream>
 #include <algorithm>
 #include <map>
@@ -6,25 +11,31 @@ bool are_all_characters_unique(std::string str);
 
 int main()
 {
-    std::cout << are_all_characters_unique("DisplayD");
+    std::cout << are_all_characters_unique("Display");
 
     return 0;
 }
 
 bool are_all_characters_unique(std::string str)
 {
-    std::map<char, int> letters;
+    std::map<char, int> map;
 
     for (size_t i = 0; i < str.size(); i++)
     {
-        letters.emplace(std::make_pair(char(str[i]), int(1)));
-        std::cout << str[i] << std::endl;
+        auto search = map.find(str[i]);
+        if (search != map.end())
+        {
+            search->second++;
+        }
+        else
+        {
+            map.emplace(std::pair<char, int>(str[i], 1));
+        }
     }
 
-
-    for (std::string::iterator it = str.begin(); it != str.end(); it++)
+    for (auto it = map.begin(); it != map.end(); it++)
     {
-        if (letters.find(*it) != letters.end())
+        if (it->second > 1)
             return false;
     }
 
