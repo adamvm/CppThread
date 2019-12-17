@@ -1,0 +1,35 @@
+Lampda to funkcja ktora nie ma nazwy i jest utworzona tylko tymczasowo.
+Nie mozna jej wywolac z innych miesc. Dziala tylko w tym miejscu gdzie jest wykorzystana.
+
+Jest wykorzystywana najczesciej w algorytmach z biblioteki standardowej
+
+
+[](){} pusta lambda
+[](){ return 4; } lampda zwracajaca 4
+[](int i){ return i >= 0 } lampda zwracajaca jesli i >= 0
+
+jesli nie przyjmuje zadnych parametrow to nawiasy okragle mozna pominac
+
+[] { return 4; }
+
+
+Od C++ 14 nie trzeba pisać typu zwracanego (kompilator z kodu sam go wydedukuje)
+
+Przed C++14 piszemy typ zwracany w ten sposob:
+
+[](int c) -> bool { ... }
+
+LAMPDOM mozna nadac nazwe poprzez przypisanie lampty
+
+auto naszaLampda = [](int k){ return k * 10; };
+
+
+[](){}
+
+to co tu wpiszemy [] daje:
+
+[] puste nawiasy znacza ze tresc funkcji lampdy nie przyjmuje rzadnych zmiennych spoza swojego ciała
+[&] oznacza ze kazda zmienna spoza ciala lapmdy jest pobrana za pomoca referencji. Wszystko jest mozliwe do nadpisania
+[=] kazda zmienna spoza ciala lampdy jest pobrana za pomoca kopi. Nic (za wyjatkiem wskaznika) nie jest mozliwe do nadpisania
+[capture-list] oznacza pobranie konkretnej zmiennej spoza ciala lampdy (domyslnie pobranie za pomoca kopii, mozna uzyc tez & referencj)
+[*this] C++17 pobranie wartosci wskaznika za pomoca dereferencji
