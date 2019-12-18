@@ -18,9 +18,7 @@ bool is_string_palindrome(std::string str)
 
 int main()
 {
-
     std::cout << "Madam is a palindrome: " << is_string_palindrome("");
 
     return 0;
-
 }

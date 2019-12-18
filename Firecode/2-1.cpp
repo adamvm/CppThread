@@ -1,3 +1,5 @@
+// Selection sort
+
 #include <iostream>
 
 void swap(int & number1, int & number2);
