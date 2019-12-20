@@ -15,13 +15,10 @@ int main()
         mapka.insert(pair<int, int>(tab[i], 0));
     }
     
-    for (size_t i = 0; i < sz; i++)
+    if (mapka.count(55))
     {
-        if (tab[i] == (mapka.find(i) != mapka.end()))
-            cout << "Found";
-    }   
-    
-
+        std::cout << "Found";
+    }
 
     return 0;
 }

@@ -15,8 +15,6 @@ erase(const g) - usuwa wartosc z mapy
 clear() - usuwa wszystkie elementy z mapy
 */
 
-
-
 int main()
 {
     map<int, int> mapka;
