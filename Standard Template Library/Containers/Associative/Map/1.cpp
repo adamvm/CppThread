@@ -30,10 +30,14 @@ int main()
 // PRZESZUKIWANIE ZBIORU
 
 
-    for ( auto iter = mapka.begin(); iter != mapka.end(); ++iter )
-    {
-        cout << iter->first << " " << iter->second << endl;
-    }
+    // for ( auto iter = mapka.begin(); iter != mapka.end(); ++iter )
+    // {
+    //     cout << iter->first << " " << iter->second << endl;
+    // }
+
+    for (auto const & el : mapka)
+        std::cout << el.first << " " << el.second;
+
 
     return 0;
 }

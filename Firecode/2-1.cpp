@@ -1,34 +1,23 @@
 // Selection sort
 
 #include <iostream>
+#include <array>
 
 void swap(int & number1, int & number2);
+template <size_t N>
+void show(const std::array<int, N> &array);
 
 int main()
 {
-    int arr[] = {7,5,2,3,5,1,9,11,4,2};
-    int min, temp;
+    std::array<int, 4> numbers = {7, 2, 14, 1};
 
-    std::cout << "Original array: ";
+    show(numbers);
 
-    for (auto const & el : arr)
-        std::cout << el;
+    swap(numbers[0], numbers[3]);
 
-    for (size_t i = 0; i < 10; i++)
-    {
-
-        for (size_t j = i; j < 10; j++)
-        {
-            min = arr[i];
-            if (arr[i] < min)
-                min = arr[i];
-        }
-    }
-
-    swap(arr[0], arr[3]);
-    std::cout << std:: endl << "Sorted array: ";
-    for (auto const & el : arr)
-        std::cout << el;
+    std::cout << std::endl;
+    
+    show(numbers);
 
     return 0;
 }
@@ -39,4 +28,10 @@ void swap(int & number1, int & number2)
     temp = number1;
     number1 = number2;
     number2 = temp;
+}
+
+template <size_t N>
+void show(const std::array<int, N> &array){
+    for (auto &i : array)
+        std::cout << i << " ";
 }
