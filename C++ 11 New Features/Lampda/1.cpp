@@ -1,13 +1,21 @@
 #include <iostream>
 
+void test(void(*l0))
+{
+
+
+}
+
+
 int main()
 {
-    auto MojaLampda = [](int x)->int { return x * 10; };
-    auto MojaLampda2 = [](int x){ return x / 10; };
+    auto l0 = [](){ std::cout << "Hello"; };
 
 
-    std::cout << MojaLampda2(20);
+    auto l1 = [](int x)->int { return x * 10; };
+    auto l2 = [](int x){ return x / 10; };
 
+    std::cout << l1(20);
 
     return 0;
 }
