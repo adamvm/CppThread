@@ -1,11 +1,6 @@
 #include <iostream>
 
-void test(void(*l0))
-{
-
-
-}
-
+// Lambda is a direct replacement for a function pointer
 
 int main()
 {
