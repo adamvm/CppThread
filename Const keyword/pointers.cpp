@@ -4,7 +4,7 @@ int main()
 {
     int value1 = 5;
     int value2 = 55;
-    double value3 = 55.5;
+    double value3 = 55.55;
 
     const int * pValue1 = &value1;
     // pointer to int that is const (pointer cannot point any other type)
