@@ -23,8 +23,9 @@ int main()
     for (vector<Person>::iterator it = wektor.begin(); it != wektor.end(); it++)
         cout << it->name << " " << it->number << endl;
 
-    auto it2 = find_if(wektor.begin(); wektor.end(); this->name == 555);
+    auto it2 = find_if(wektor.begin(), wektor.end(), [](const Person & obj){ return obj.number == 555; });
 
+    std::cout << it2->name << " " << it2->number << std::endl;
 
     return 0;
 }

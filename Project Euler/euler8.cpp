@@ -40,14 +40,26 @@ int main()
     {
         std::string Stemp = sNumber.substr (i,numberLength);
         int iTemp = atoi(Stemp.c_str());
-        if (iTemp > largest)
-        {
-        largest = iTemp;
-        }
+        if (product(iTemp) > largest)
+            largest = iTemp;
     }
+    
     std::cout << largest;
     
     return 0;
 }
 
-long long product(long);
+long long product(std::string iTemp)
+{
+    long long product = 1;
+    int temp;
+
+    for (size_t i = 0; i < iTemp.size(); i++)
+    {   
+        
+        temp = (int)(iTemp[i]) - 48;
+        product = product * temp;
+    }
+
+    return product;
+}

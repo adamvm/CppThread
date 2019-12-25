@@ -2,24 +2,20 @@
 #include <list>
 #include <chrono>
 
-using namespace std;
-//using namespace std::chrono;
-
 int main()
 {
-    std::list<int> lista;
+    std::list<int> list1;
 
     auto start = std::chrono::high_resolution_clock::now();
 
     for (int i = 1; i <= 1000000; i++)
-        lista.emplace_front(i);
+        list1.emplace_front(i);
 
     auto stop = std::chrono::high_resolution_clock::now();   
 
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
 
-    auto duration = chrono::duration_cast<chrono::microseconds>(stop-start);
-
-    cout << "Program trwal: " << duration.count() << " milisekund";
+    std::cout << "Execution time: " << duration.count() << " ms";
 
     return 0;
 }

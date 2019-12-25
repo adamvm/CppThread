@@ -7,7 +7,7 @@ bool isPalindrome(string);
 
 int main()
 {
-    cout << isPalindrome("babababababababababababab");
+    cout << isPalindrome("aaa");
 
     return 0;
 }
@@ -17,7 +17,7 @@ bool isPalindrome(string word)
     string::iterator end = word.end()-1;
     // because end() return past-the-end element
 
-    for (string::iterator it = word.begin(); it != end; it++, end--)
+    for (string::iterator it = word.begin(); it < end; it++, end--)
         if (*it != *end)
             return false;
     return true;
