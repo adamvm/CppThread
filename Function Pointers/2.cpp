@@ -24,5 +24,7 @@ int main()
 
     forEach(values,[](int el){ std::cout << el << " "; }); // option with lambda
 
+    forEach(values,[](int el){ print(el); }); // option with lambda
+
     return 0;
 }
