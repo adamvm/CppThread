@@ -7,7 +7,6 @@ int sum(int a, int b, int c)
     return a + b + c;
 }
 
-
 int main()
 {
     std::cout << sum(10, 20, 30);

@@ -6,6 +6,5 @@ int main()
 
     std::cout << value;
 
-
     return 0;
 }

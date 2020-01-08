@@ -12,8 +12,6 @@ public:
     void speak() const { std::cout << "My name is: " << name << std::endl; }
 };
 
-
-
 int main()
 {
     Animal animal1;

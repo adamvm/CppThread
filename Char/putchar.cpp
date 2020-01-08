@@ -4,7 +4,7 @@
 
 int main()
 {
-    char str[] = "dupolapek";
+    char str[] = "warsaw";
 
     for (int i = 0; i != sizeof(str); i++)
         putchar(toupper(str[i]));
