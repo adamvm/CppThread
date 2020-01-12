@@ -5,15 +5,17 @@
 int main()
 {
     std::vector<int> v {3, 5, 4, 4, 7, 3, 100};
-    std::sort(v.begin(), v.end());
+//    std::sort(v.begin(), v.end());
 
-    std::copy(v.begin(), v.end(), std::vector<int>::istrea)
+    for (const auto &el : v)
+        std::cout << el << " ";
 
-    auto new_end = unique(v.begin(), v.end());
+std::cout << std::endl;
+    auto new_end = std::unique(v.begin(), v.end());
 
 
 
-    v.resize(std::distance(v.begin(), new_end));
+    v.erase(new_end, v.end());
 
     for (const auto &el : v)
         std::cout << el << " ";

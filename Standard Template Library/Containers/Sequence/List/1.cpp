@@ -30,6 +30,7 @@ int main()
 
     lista.emplace_front(2321);
     lista.emplace_front(156);
+    lista.emplace_front(156);
     lista.emplace_back(423);
     lista.emplace_back(15734);
     lista.emplace_back(15734);

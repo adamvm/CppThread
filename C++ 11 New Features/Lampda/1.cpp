@@ -8,7 +8,7 @@ int main()
 
 
     auto l1 = [](int x)->int { return x * 10; };
-    auto l2 = [](int x){ return x / 10; };
+    auto l2 = [](int x){ return x / 10; };  // possible from C++14
 
     std::cout << l1(20);
 

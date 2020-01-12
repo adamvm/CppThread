@@ -35,8 +35,6 @@ int main()
 void showMap(std::map<int, std::string> m)
 {
     for (const auto &i : m)
-    {
-    std::cout << i.first << " " << i.second << std::endl;
-    }
+        std::cout << i.first << " " << i.second << std::endl;
     std::cout << std::endl;
 }
