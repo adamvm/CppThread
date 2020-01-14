@@ -1,6 +1,6 @@
 #include <iostream>
 
-template <typename T>  // or "template <typename T>"
+template <typename T>  // or "template <class T>"
 void print(T parameter);
 
 int main()

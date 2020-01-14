@@ -13,7 +13,7 @@ public:
 
 int main()
 {
-    Test<int> object1(151);
+    Test<int> object1(151); // <int> defining class type is MONDATORY!!!
     object1.print();
 
     Test<std::string> object2("Bobby");
