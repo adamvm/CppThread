@@ -8,11 +8,9 @@ int main()
 
     std::stringstream ss;
 
-    // std::string info = 
-    // This will not work!
-
     ss << "Name: " << name << ", age: " << age;
 
     std::cout << ss.str();
 
+    return 0;
 }

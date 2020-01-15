@@ -1,37 +1,45 @@
-// Selection sort
-
 #include <iostream>
 #include <array>
 
-void swap(int & number1, int & number2);
-template <size_t N>
-void show(const std::array<int, N> &array);
+int* selection_sort_array(int arr[], int size);
 
 int main()
 {
-    std::array<int, 4> numbers = {7, 2, 14, 1};
+    int numbers[] = {-1, 7, 2, 14, 1};
 
-    show(numbers);
+    int * pArray = selection_sort_array(numbers, 5);
 
-    swap(numbers[0], numbers[3]);
+    for (int i = 0; i < 5; i++, pArray++)
+        std::cout << *pArray << " ";
 
-    std::cout << std::endl;
-    
-    show(numbers);
+    std::cout << std::endl << *pArray;
 
     return 0;
 }
 
-void swap(int & number1, int & number2)
+int* selection_sort_array(int arr[], int size)
 {
-    int temp;
-    temp = number1;
-    number1 = number2;
-    number2 = temp;
-}
+    int indexMin;
+    int min;
+    
+    for (int i = 0; i < size; i++)
+    {
+        min = arr[i];
+        indexMin = i;
+        
+        for (int j = i; j < size; j++)
+        {
+            if (arr[j] < min)
+            {
+                min = arr[j];
+                indexMin = j;
+            }
+        }
 
-template <size_t N>
-void show(const std::array<int, N> &array){
-    for (auto &i : array)
-        std::cout << i << " ";
+        int temp = arr[i];
+        arr[i] = arr[indexMin];
+        arr[indexMin] = temp;
+    }
+
+    return arr;
 }
