@@ -7,7 +7,7 @@ private:
     T obj;
 
 public:
-    Test(T obj) { this->obj = obj; };
+    Test(T obj) : obj(obj) {};
     void print() { std::cout << obj; };
 };
 
