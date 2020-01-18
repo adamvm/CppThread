@@ -4,7 +4,7 @@ class ExecTest
 {
 public:
    ExecTest() {
-      std::printf("ExecTest();\n");  //celowo używam std::printf bo nie wiadomo, czy std::cout będzie już zainicjowane !!!
+      std::printf("ExecTest();\n");
    }
 } Obj;
 
