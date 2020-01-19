@@ -2,9 +2,11 @@
 
 class A
 {
+private:
+    int x;
 public:
-    A() { std::cout << "Constructor A\n"; }
-    ~A() { std::cout << "Destructor A\n"; }
+    A() { }
+    A(int x) : x(x) { }
 };
 
 class B : public A

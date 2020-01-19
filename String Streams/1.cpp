@@ -10,7 +10,7 @@ int main()
 
     ss << "Name: " << name << ", age: " << age;
 
-    std::cout << ss.str();
+   std::string bob = ss.str();
 
     return 0;
 }
