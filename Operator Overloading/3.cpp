@@ -7,7 +7,8 @@
 int main()
 {
     std::vector<int> v {1, 1, 2, 2, 6, 9, 9, 15};
-    int Q, temp;
+    int Q;
+    int temp;
 
     std::vector<int> v2 {1, 4, 9, 15};
 
