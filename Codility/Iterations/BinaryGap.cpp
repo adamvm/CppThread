@@ -6,34 +6,34 @@ int solution(int N);
 
 int main()
 {
-    std::cout << solution(523);
+    std::cout << solution(523) << std::endl;
+    std::cout << solution(32) << std::endl;
 
     return 0;
 }
 
 int solution(int N)
 {
-    std::string Nbinary = "";
+    int overallMax = 0;
     int localMax = 0;
-    int totalMax = 0;
-
-    while (N != 0)
+    bool flag = false;
+    while (N > 0)
     {
         if (N % 2 == 0)
         {
-            Nbinary = "0" + Nbinary;
-            localMax++;
-            if (localMax > totalMax)
-                totalMax = localMax;
+            if (flag == true)
+                localMax++;
         }
         else
         {
-            Nbinary = "1" + Nbinary;
+            flag = true;
             N = N - 1;
+            if (localMax > overallMax)
+                overallMax = localMax;
             localMax = 0;
         }
         N = N / 2;
     }
-    
-    return totalMax;
+
+    return overallMax;
 }
