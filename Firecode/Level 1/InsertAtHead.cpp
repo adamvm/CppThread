@@ -7,10 +7,23 @@ insert_at_head(Head,2) ==> 2->1->2
 insert_at_head(Head,3) ==> 3->1->2
 */
 
-listNode* insert_at_head(listNode* head, int data)
+listNode* insert_at_head (listNode* head, int data)
 {
+    listNode* newNode = new listNode;
+    newNode->value = data;
     
+    if (head == NULL)
+    {
+        head = newNode;
+        newNode->next = NULL;
+        return head;
+    }
+    else
+    {
+        listNode* temp = head;
+        head = newNode;
+        newNode->next = temp;
+    }
 
-
-    
+    return head;
 }
