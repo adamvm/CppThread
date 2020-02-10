@@ -1,2 +1,3 @@
-C:/Temp/cpp-practice/Try/build/CMakeFiles/edit_cache.dir
-C:/Temp/cpp-practice/Try/build/CMakeFiles/rebuild_cache.dir
+/home/kawapa/Documents/cpp-practice/Try/build/CMakeFiles/rebuild_cache.dir
+/home/kawapa/Documents/cpp-practice/Try/build/CMakeFiles/hello_world.dir
+/home/kawapa/Documents/cpp-practice/Try/build/CMakeFiles/edit_cache.dir
