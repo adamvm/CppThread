@@ -1,3 +1,12 @@
+/*
+1. Create a map of integers to strings with content:
+{1 → ‘one’, 2 → ‘two’, 3 → ‘thr’, 4 → ‘four’, 5 → ‘five’}
+2. Add a new pair: 3 → ‘three’
+3. Erase element with key 5.
+4. Print how many values exist for all keys
+5. Find element with key 4 and print its key and value.
+*/
+
 #include <iostream>
 #include <map>
 #include <algorithm>

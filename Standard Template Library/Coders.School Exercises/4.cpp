@@ -1,3 +1,13 @@
+/*
+1. Create an empty list.
+2. Fill it with numbers from 1 to 1’000’000.
+3. Measure time of execution (time ./a.out in terminal)
+4. Print value of the element with index 500’000
+5. Measure time of execution
+6. Replace list with vector
+7. Measure time of execution
+*/
+
 #include <list>
 #include <iostream>
 #include <algorithm>

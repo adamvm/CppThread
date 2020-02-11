@@ -1,3 +1,14 @@
+/*
+1. Create an empty vector.
+2. Print size and capacity.
+3. Resize vector to size 10 and fill it with value 5.
+4. Print size and capacity.
+5. Reserve space for 20 elements.
+6. Print size and capacity.
+7. Shrink to fit.
+8. Print size and capacity.
+*/
+
 #include <iostream>
 #include <vector>
 

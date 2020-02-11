@@ -1,3 +1,12 @@
+/*
+1. Create std::array with size: 10.
+2. Fill it with number 5.
+3. Assign to 4th element value 3.
+4. Create another array of the same size.
+5. Swap arrays.
+6. Print both – one array in one line.
+*/
+
 #include <iostream>
 #include <map>
 #include <algorithm>

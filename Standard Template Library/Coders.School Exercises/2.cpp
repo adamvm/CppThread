@@ -1,3 +1,14 @@
+/*
+1. Create a vector with the following values { 1, 2, 4, 5, 6 }.
+2. Erase the first value.
+3. Add 5 at the end.
+4. Create 12 in the vector at the beginning (emplace).
+5. Print vector size and max_size.
+6. Print the vector.
+7. Clear the vector.
+8. Print a size.
+*/
+
 #include <iostream>
 #include <vector>
 #include <algorithm>

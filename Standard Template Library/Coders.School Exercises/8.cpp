@@ -1,3 +1,11 @@
+/*
+1. Create std::array of 6 doubles with the following elements:
+{5.0, 4.0, -1.4, 7.9, -8.22, 0.4}
+2. Sort elements of the array using std::sort and provide a functor, that sorts by absolute values
+(std::abs)
+3. Change functor object to a lambda function.
+*/
+
 #include <iostream>
 #include <array>
 #include <algorithm>

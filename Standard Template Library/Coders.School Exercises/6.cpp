@@ -1,3 +1,11 @@
+/*
+1. Create std::forward_list with some data (integers) at least 7.
+2. Get two iterators with global functions begin(), end().
+3. Print size of the list
+4. Get an iterator to the 5th element and print its value.
+5. Print distance() from begin to this iterator.
+*/
+
 #include <iostream>
 #include <forward_list>
 #include <algorithm>
