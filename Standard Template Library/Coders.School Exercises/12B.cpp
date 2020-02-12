@@ -15,8 +15,6 @@ generated random numbers)
 #include <math.h>
 #include <time.h>
 
-std::vector<int> primes(int a);
-
 int main()
 {
     int N, M;
@@ -27,7 +25,6 @@ int main()
     std::cin >> M;
 
     std::vector<int> NRandomValues(N);
-    std::vector<int> AllPrimestoM = primes(M);
 
     srand(time(NULL));
     std::for_each(NRandomValues.begin(), NRandomValues.end(), [=](int &a){ return a = rand()%M; });
