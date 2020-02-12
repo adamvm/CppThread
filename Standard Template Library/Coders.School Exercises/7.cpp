@@ -14,16 +14,11 @@ int main()
 {
     int i = 5;
 
-    const auto f = std::bind(&printInteger, 5);  // f makes a copy of i (5)
-    const auto g = std::bind(&printInteger, std::ref(i));  // f makes a copy of i (5)
+    printInteger(i);
 
-    f();
-    f();
+    const auto a = std::bind(&i, std::multiplies<int>());
 
-    i = 666;
-
-    f();
-    g();
+    printInteger(i);
 
     return 0;
 }

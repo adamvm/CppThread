@@ -36,7 +36,7 @@ int main()
 
     auto search = map1.find(4);
     
-    std::cout << search->first << " " << search->second;
+    std::cout << search->first << " " << search->second << std::endl;
 
     return 0;
 }

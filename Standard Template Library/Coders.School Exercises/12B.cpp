@@ -27,7 +27,7 @@ int main()
     std::vector<int> NRandomValues(N);
 
     srand(time(NULL));
-    std::for_each(NRandomValues.begin(), NRandomValues.end(), [=](int &a){ return a = rand()%M; });
+    std::for_each(NRandomValues.begin(), NRandomValues.end(), [=](int &a){ return a = rand() % M; });
 
     for (auto &&i : NRandomValues)
     {

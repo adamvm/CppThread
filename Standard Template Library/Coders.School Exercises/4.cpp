@@ -17,11 +17,12 @@
 
 int main()
 {
-    std::list<int> list1(1000000); // alternatively std::vector
+    //std::list<int> v(1000000);
+    std::vector<int> v(1000000);
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::iota(list1.begin(), list1.end(), 1);
+    std::iota(v.begin(), v.end(), 1);
 
     auto stop = std::chrono::high_resolution_clock::now();
 
@@ -29,10 +30,10 @@ int main()
 
     std::cout << "Execution time: " << duration.count() << " ms" << std::endl;
 
-    auto it = list1.begin();
+    auto it = v.begin();
 
     std::advance(it, 499999);
-    std::cout << "Element numer 500000 przechowuje liczbe: " << *it;
+    std::cout << "Element numer 500000 przechowuje liczbe: " << *it << std::endl;
 
     return 0;
 }
