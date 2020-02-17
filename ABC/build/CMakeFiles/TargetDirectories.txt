@@ -1,0 +1,4 @@
+/home/kawapa/Documents/cpp-practice/ABC/build/CMakeFiles/rebuild_cache.dir
+/home/kawapa/Documents/cpp-practice/ABC/build/CMakeFiles/edit_cache.dir
+/home/kawapa/Documents/cpp-practice/ABC/build/CMakeFiles/HelloWorld-lib.dir
+/home/kawapa/Documents/cpp-practice/ABC/build/CMakeFiles/HelloWorld.dir

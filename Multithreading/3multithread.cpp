@@ -1,27 +1,46 @@
 #include <algorithm>
+#include <chrono>
 #include <functional>
 #include <iostream>
 #include <numeric>
 #include <thread>
 #include <vector>
 
-constexpr size_t min_data_size = 5000;
+template <typename IT, typename T>
+T p_accumulate(IT first, IT last, T init);
 
-// constexpr to znaczy ze ta liczba bedzie znana w czasie kompilacji
+int main()
+{   
+    std::vector<int> v(1'000'000);
+
+    std::generate(begin(v), end(v), [i{0}]() mutable { return i++; });
+    // alternatively std::iota(v.begin(), v.end(), 0)
+
+    auto start = std::chrono::high_resolution_clock::now();
+    auto result = p_accumulate(begin(v), end(v), 0);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> difference = end - start;
+    std::cout << "Multithreaded version: " << difference.count() << " ms" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    result = std::accumulate(std::begin(v), std::end(v), 0);
+    end = std::chrono::high_resolution_clock::now();
+    difference = end - start;
+    std::cout << "Singlethread version: " << difference.count() << " ms" << std::endl;
+
+    return 0;
+}
 
 template <typename IT, typename T>
 T p_accumulate(IT first, IT last, T init)
 {
     const size_t size = std::distance(first, last);
+
     if (!size)
         return init;
-
-    if (size < min_data_size)
-        return std::accumulate(first, last, init);
-    
+   
     const size_t threadsInCPU = std::thread::hardware_concurrency();
     const size_t usedThreads = threadsInCPU != 0 ? threadsInCPU : 2;
-    const size_t usedThreads = std::min(recommendedThreads, threadsInCPU);
     const size_t dataChunk = size / usedThreads;
 
     std::vector<T> results(usedThreads);
@@ -40,22 +59,8 @@ T p_accumulate(IT first, IT last, T init)
     }
 
     results[usedThreads - 1] = std::accumulate(begin, last, T{});
+
     std::for_each(std::begin(threads), std::end(threads), std::mem_fn(&std::thread::join));
 
-    return std::accumulate(std::begin(results), end(results), init);
-}
-
-int main()
-{   
-    std::vector<int> v(1'000'000);
-
-    std::generate(begin(v), end(v), [i{0}]() mutable { return i++; });
-    // mutable musi byc bo lambda musi wiedziec ze moze to zmieniac
-
-    // std::cout << std::accumulate(begin(v), end(v), 0) << std::endl;
-    // nie trzeba std bo zagniezadzanie namespacow?
-
-    std::cout << p_accumulate(begin(v), end(v), 0) << std::endl;
-
-    return 0;
+    return std::accumulate(std::begin(results), std::end(results), init);
 }
