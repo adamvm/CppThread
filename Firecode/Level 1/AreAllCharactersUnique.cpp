@@ -15,7 +15,6 @@ bool are_all_characters_unique(std::string str);
 
 int main()
 {
-
     std::cout << are_all_characters_unique("123!@");
 
     return 0;
