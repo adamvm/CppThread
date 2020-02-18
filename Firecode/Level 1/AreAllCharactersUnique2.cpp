@@ -10,39 +10,33 @@ are_all_characters_unique("") -> true
 
 #include <iostream>
 #include <algorithm>
-#include <map>
+#include <unordered_set>
 
 bool are_all_characters_unique(std::string str);
 
 int main()
 {
-    std::cout << are_all_characters_unique("123!@");
+    std::cout << are_all_characters_unique("1123!@") << std::endl;
 
     return 0;
 }
 
 bool are_all_characters_unique(std::string str)
 {
-    std::map<char, int> map;
+    size_t size = str.size();
+    
+    if (size == 0)
+        return true;
+        
+    std::unordered_set<char> m;
 
-    for (size_t i = 0; i < str.size(); i++)
+    for (size_t i = 0; i < size; i++)
     {
-        auto search = map.find(str[i]);
-        if (search != map.end())
-        {
-            search->second++;
-        }
-        else
-        {
-            map.emplace(std::pair<char, int>(str[i], 1));
-        }
-    }
-
-    for (auto it = map.begin(); it != map.end(); it++)
-    {
-        if (it->second > 1)
+        auto search = m.find(str[i]);
+        if (search != m.end())
             return false;
+        else m.insert(str[i]);
     }
-
+    
     return true;
 }

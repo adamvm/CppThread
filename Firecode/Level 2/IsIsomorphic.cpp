@@ -8,7 +8,7 @@ Target linear time and space complexity with your solution.
 
 #include <algorithm>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 
 bool is_isomorphic(std::string input1, std::string input2);
 
@@ -26,33 +26,34 @@ bool is_isomorphic(std::string input1, std::string input2)
 {
     if (input1.size() != input2.size())
         return false;
+        
+    size_t length = input1.size();
     
-    std::map<char, int> i1;
-    std::map<char, int> i2;
-
-    const size_t length = input1.size();
-
+    std::unordered_map<char, int> s1;
+    std::unordered_map<char, int> s2;
+    
     for (size_t i = 0; i < length; i++)
     {
-        auto search1 = i1.find(input1[i]);
-        auto search2 = i1.find(input2[i]);
-        if (search1 != i1.end())
+        auto search1 = s1.find(input1[i]);
+        auto search2 = s2.find(input2[i]);
+        
+        if (search1 != s1.end())
             search1->second++;
         else
-            i1.insert({input1[i], 1});
-        if (search2 != i2.end())
-            search1->second++;
+            s1.insert({input1[i], 1});
+        if (search2 != s2.end())
+            search2->second++;
         else
-            i2.insert({input2[i], 1});        
+            s2.insert({input2[i], 1});
     }
-
-    auto it1 = i1.begin();
-
-    for (auto it2 = i2.begin(); it1 != i2.end(); it1++, it2++)
+    
+    auto it2 = s2.begin();
+    
+    for (auto it1 = s1.begin(); it1 != s1.end(); it1++, it2++)
     {
         if (it1->second != it2->second)
             return false;
     }
-
+    
     return true;
 }
