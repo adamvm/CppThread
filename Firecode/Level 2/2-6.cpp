@@ -8,10 +8,10 @@ int main()
     int tab[] = {1, 3, 5, 6, 7, 16, 19, 32, 45, 46, 50};
 
     std::cout << "Jedynka: " << binary_search(tab, 11, 1) << std::endl;
-        std::cout << "Trojka: " << binary_search(tab, 11, 3) << std::endl;
-            std::cout << "Piatka: " << binary_search(tab, 11, 5) << std::endl;
-                std::cout << "Szostka: " << binary_search(tab, 11, 6) << std::endl;
-                    std::cout << "Siodemka: " << binary_search(tab, 11, 7) << std::endl;
+    std::cout << "Trojka: " << binary_search(tab, 11, 3) << std::endl;
+    std::cout << "Piatka: " << binary_search(tab, 11, 5) << std::endl;
+    std::cout << "Szostka: " << binary_search(tab, 11, 6) << std::endl;
+    std::cout << "Siodemka: " << binary_search(tab, 11, 7) << std::endl;
 
 
     return 0;
