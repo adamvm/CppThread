@@ -17,11 +17,11 @@ fib(3) ==> 2
 #include <iostream>
 
 int fib(int n);
+int fib_upgraded(int n);
 
 int main()
 {
-    for (int i = 0; i <= 15; i++)
-        std::cout << fib(i) <<std::endl;
+    std::cout << fib_upgraded(5) <<std::endl;
 
     return 0;
 }
@@ -34,4 +34,26 @@ int fib(int n)
         return 1; 
     else
         return fib(n - 1) + fib(n - 2);    
+}
+
+int fib_upgraded(int n)
+{
+    int x = 0;
+    int y = 1;
+    int z;
+
+    if (n == 0)
+        return x;
+
+    if (n <= 2)
+        return y;
+
+    for (int i = 0; i < n - 1; i++)
+    {
+        z = x + y;
+        x = y;
+        y = z;
+    }
+
+    return z;
 }
