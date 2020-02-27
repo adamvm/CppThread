@@ -20,12 +20,19 @@ public:
     int _forkIndexRight;
     //std::thread::id myID = std::thread::get_id();
 
-    void doSomething() { }
-    void eat() { }
+    void doSomething()
+    {
+        contemplate();
+        eat();
+    }
+    void eat()
+    {
+        
+    }
     void contemplate() { }
     void idle() { std::this_thread::sleep_for(2s); }
 
-    Philosopher(const std::string &name, int left, size_t right)
+    Philosopher(const std::string &name, std::vector<Fork> &table, int left, size_t right)
         : _name(name), _forkIndexLeft(left), _forkIndexRight(right) { }
     ~Philosopher() { }
 };
@@ -36,11 +43,11 @@ int main()
     std::vector<Philosopher> philosophers
     {
         {
-            { "Tales", 0, 1         },
-            { "Pitagoras", 1, 2     },
-            { "Sokrates", 2, 3      },
-            { "Platon", 3, 4        },
-            { "Arystoteles", 0, 4   },
+            { "Tales", table, 0, 1         },
+            { "Pitagoras", table, 1, 2     },
+            { "Sokrates", table, 2, 3      },
+            { "Platon", table, 3, 4        },
+            { "Arystoteles", table, 4      },
             // 4, 0 spowoduje zakleszczenie?
         }
     };
