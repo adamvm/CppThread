@@ -6,15 +6,16 @@
 2. [Kiedy nie stosować współbieżności?](#2-kiedy-nie-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9Bci)
 3. [Wątki, podstawowe operacje na wątkach](#3-w%C4%85tki-podstawowe-operacje-na-w%C4%85tkach)
 4. [Przekazywanie argumentów do funkcji w wątku](#4-przekazywanie-argument%C3%B3w-do-funkcji-w-w%C4%85tku)
-5. [Usypianie wątków](#5-usypianie-w%C4%85tk%C3%B3w)
+5. [Wyjątki w wątkach]()
+6. [Usypianie wątków](#6-usypianie-w%C4%85tk%C3%B3w)
 
 ## [Współdzielenie danych](#wsp%C3%B3%C5%82dzielenie-danych-1)
 
-6. [Niebezpieczeństwa podczas używania wielowątkowości](#6-niebezpiecze%C5%84stwa-podczas-u%C5%BCywania-wielow%C4%85tkowo%C5%9Bci)
-7. [Thread sanitizer](#7-thread-sanitizer)
-8. [Debugger](#8-debugger)
-9. [Mutexy](#9-mutexy)
-10. [Menadżery blokad](#10-menad%C5%BCery-blokad)
+7. [Niebezpieczeństwa podczas używania wielowątkowości](#7-niebezpiecze%C5%84stwa-podczas-u%C5%BCywania-wielow%C4%85tkowo%C5%9Bci)
+8. [Thread sanitizer](#8-thread-sanitizer)
+9. [Debugger](#9-debugger)
+10. [Mutexy](#10-mutexy)
+11. [Menadżery blokad](#11-menad%C5%BCery-blokad)
 
 ## Wielowątkowość: wątki
 
@@ -34,7 +35,7 @@
 
 Instrukcja | Opis
 ------------ | -------------
-`std::thread name(function)` | <ul><li>Żeby pomyślnie utworzyć wątek **należy** przekazać mu: funkcję, funktor, obiekt funkcyjny (jest on kopiowany do wątku), lambdę</li><li> Jeśli wątek nie dostanie żadnej funkcji `std::thread::joinable()` zwróci `false` </li><li> Jeśli nie wywołamy `join()` lub `detach()` otrzymamy `std::terminate` </li><li> Jeśli podczas wykonywania programu wyskoczy wyjątek, nie będzie możliwe złączenie wątku dlatego należy skorzystać z RAII (*Resource Acquisition Is Initialization*) - patrz "[Przykład 2](#przyk%C5%82ad-2)"</li></ul>
+`std::thread name(function)` | <ul><li>Żeby pomyślnie utworzyć wątek **należy** przekazać mu: funkcję, funktor, obiekt funkcyjny (jest on kopiowany do wątku), lambdę</li><li> Jeśli wątek nie dostanie żadnej funkcji `std::thread::joinable()` zwróci `false` </li><li> Jeśli nie wywołamy `join()` lub `detach()` otrzymamy `std::terminate` </li><li> Jeśli podczas wykonywania programu wyskoczy wyjątek, nie będzie możliwe złączenie wątku dlatego należy skorzystać z RAII (*Resource Acquisition Is Initialization*) - patrz "[Przykład 2](#przyk%C5%82ad-2)"</li><li> Kopiowanie wątku jest zabronione, możliwe jest natomiast przenoszenie (`std::move`) oraz zwracanie kopii wątku z funkcji (kompilator zoptymalizuje kod i "wyrzuci" zbędne kopiowanie (RVO - *Return Value Optimisation*) </li></ul>
 `std::thread::joinable()` | <ul><li> Zwraca `true` jeśli można zrobić `join()` lub `detach()`</li></ul>
 `std::thread::join()` | <ul><li>Jeśli chcemy poczekać aż wątek zakończy wszystkie swoje obliczenia i chcemy go zsynchronizować w jakimś miejscu</li><li>Program nie pójdzie dalej póki wątek nie zakończy pracy</li></ul>
 `std::thread::detach()` | <ul><li> Nie czekamy na wątek tylko idziemy dalej </li><li> Tracimy nad nim kontrolę, ale on dalej pracuje i zwróci wynik jak skończy (o ile `main()` nie zakończy się szybciej) </li><li> Każdy wątek posiada odrębny stos (adres powrotu z funkcji oraz zmienne lokalne). Wywołując `detach()` wszystko się zwija.</li></ul>
@@ -66,21 +67,25 @@ int main() {
     std::thread t2(foo);
     // przekazanie funkcji
 
+    std::thread t3(&foo);
+    // przekazanie referencji do funkcji
+
     Bar1 bar1;
-    std::thread t3(bar1);
+    std::thread t4(bar1);
     // bo przeciążony operator wywołania
 
-    std::thread t4(*foo);
+    std::thread t5(*foo);
     // przekazanie wskaźnika na funkcję
 
     Bar2 bar2;
-    std::thread t5(&Bar2::foo, bar2);
+    std::thread t6(&Bar2::foo, &bar2);
 
     t1.join();
     t2.join();
     t3.join();
     t4.join();
     t5.join();
+    t6.join();
 }
 ```
 
@@ -140,8 +145,6 @@ Jeśli funkcja przyjmuje wartość, a dostanie referencję to to co tak naprawd�
 
 Rozwiązaniem problemu jest zastosowanie *wrapper'a* `std::ref` (lub `std::cref()` dla referencji stałych).
 
-**Uwaga! Należy zawsze upewnić się, że długość życia zmiennej do której się odwołujemy zawsze była dłuższa niż długość życia wątku, który na niej operuje.**
-
 ```cpp
 void bar(int& x, int* y) {
     std::cout << "Inside fun: = " << x << " | y = " << *y << std::endl;
@@ -160,7 +163,47 @@ int main() {
 }
 ```
 
-#### Przykład 1 (pułapka w kodzie)
+**Uwaga! Należy zawsze upewnić się, że długość życia zmiennej do której się odwołujemy zawsze była dłuższa niż długość życia wątku, który na niej operuje.** Przykład:
+
+```cpp
+#include <thread>
+
+void do_sth([[maybe_unused]] int i) { /* ... */ }
+
+struct A {
+    int& ref_;
+    A(int& a) : ref_(a) {}
+    void operator()() {
+        do_sth(ref_); // potential access to
+                      // a dangling reference
+    }
+};
+
+std::thread create_thread() {
+    int local = 0;
+    A worker(local);
+    std::thread t(worker);
+    return t;
+} // local is destroyed, reference in worker is dangling
+
+int main() {
+    auto t = create_thread();  // Undefined Behavior
+    auto t2 = create_thread(); // Undefined Behavior
+    t.join();
+    t2.join();
+    return 0;
+}
+```
+
+#### Przekazywanie metody klasy
+
+* Metoda klasy opalana w wątku jako kolejny (ukryty) parametr przyjmuje wkaźnik do obiektu na którym ma zostać wywołana
+    * `std::thread t(&Car::setData, &toyota, 2015, "Corolla")` mimo że, deklaracja funkcji `setData()` to `void setData(int year, const string & model)`
+    * `Corolla` nie wymaga `std::ref()` bo to zmienna tymczasowa (można podpiąć pod `const &`) 
+    * Metoda (funkcja, lambda lub funktor) są kopiowane do pamięci wątku
+    * Parametry są **kopiowane** lub **przenoszone**
+
+##### Przykład 1 (pułapka w kodzie)
 
 ```cpp
 void f(int i, std::string const& s);
@@ -188,7 +231,44 @@ void oops(int arg)
 }
 ```
 
-### 5. Usypianie wątków
+### 5. Wyjątki w wątkach
+
+* Nie można standardowo złapać wyjątków w innym wątku niż tym, który rzucił wątek
+* Aby przechwycić wyjątek rzucony z innego wątku należy użyć wskaźnika na wyjątek `std::exception_ptr`
+    * Wątek rzucający wyjątek przypisuje do niego `std::current_exception()`
+    * Wątek, który chce złapać wyjątek sprawdza czy `std::current_expection() != 0)`. Jeśli tak, bieżący wątek rzuca dany wyjątek ponownie poprzez `std::rethrow_exception()`
+* Warto używać w wyjątkach funkcji funkcji `noexcept` - wtedy wyjątki nie będą rzucane
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <exception>
+#include <stdexcept>
+
+int main()
+{
+    std::exception_ptr thread_exception = nullptr;
+    std::thread t([](std::exception_ptr & te) {
+        try {
+            throw std::runtime_error("WTF");
+        } catch (...) {
+            te = std::current_exception();
+        }
+    }, std::ref(thread_exception));
+    t.join();
+
+    if (thread_exception) {
+        try {
+            std::rethrow_exception(thread_exception);
+        } catch (const std::exception & ex) {
+            std::cout << "Thread exited with an exception: " << ex.what() << "\n";
+        }
+    }
+    return 0;
+}
+```
+
+### 6. Usypianie wątków
 
 Instrukcja | Opis
 ------------ | -------------
@@ -229,15 +309,51 @@ Wyjście:
 
 ## Współdzielenie danych
 
-### 6. Niebezpieczeństwa podczas używania wielowątkowości
+### 7. Niebezpieczeństwa podczas używania wielowątkowości
 
 Zjawisko | Opis
 ------------ | -------------
-Deadlock | <ul><li> Sytuacja, w której conajmniej dwa różne wątki czekają na siebie i żadna nie może pójść dalej</li></ul>
-Race conditions | <ul><li> Sytuacja, w której dwa lub więcej procesów wykonuje operację na zasobach dzielonych, a ostateczny wynik tej operacji jest zależny od momentu jej realizacji </li><li> Wyścig = undefined behaviour </li><li> Aby zapobiec warunkom wyścigu należy stworzyć mechanizm zabraniający więcej niż jednemu wątkowi dostępu do zasobów dzielonych w tym samym czasie </li><li> Do wykrywania tego zjawiska służy tzw. Thread Sanitizer (*TSan*, *Data race detector* wbudowany g++ oraz clang) </li><li> Debugger spowalnia wykonywanie operacji dlatego czasem może być ciężko wykryć coś takiego</li></ul>
+Deadlock | <ul><li> [Przykład](#przyk%C5%82ad-deadlock) </li><li> Sytuacja, w której conajmniej dwa różne wątki czekają na siebie i żadna nie może pójść dalej</li><li> Występuje losowo przy niektórych uruchomieniach programu </li><li> Zalecane użycie `std::scoped_lock` do rozwiązania problemu zakleszczenia</li></ul>
+Race conditions | <ul><li> [Przykład](#przyk%C5%82ad-race-conditions) </li><li> Sytuacja, w której dwa lub więcej procesów wykonuje operację na zasobach dzielonych, a ostateczny wynik tej operacji jest zależny od momentu jej realizacji </li><li> Wyścig = undefined behaviour </li><li> Aby zapobiec warunkom wyścigu należy stworzyć mechanizm zabraniający więcej niż jednemu wątkowi dostępu do zasobów dzielonych w tym samym czasie </li><li> Do wykrywania tego zjawiska służy tzw. Thread Sanitizer (*TSan*, *Data race detector* wbudowany g++ oraz clang) </li><li> Debugger spowalnia wykonywanie operacji dlatego czasem może być ciężko wykryć coś takiego</li></ul>
 Data races | <ul><li>Wyścig na danych, wartość zmiennej będzie zależeć od tego jak zostaną zakolejkowane wątki i może być różna przy różnych uruchomieniach programu</li></ul>
 Zagłodzenie procesu/wątku | <ul><li> Sytuacja, w której przynajmniej jeden wątek nigdy nie dostanie wszystkich wymaganych zasobów</li></ul>
 Livelock | <ul><li> Podobny do Deadlock przy czym stan dwóch procesów związanych z blokadą zmienia się w stosunku do drugiego procesu </li><li> Deadlock powoduje nieskończone oczekiwanie podczas gdy Livelock, jest szczególnym przypadkiem deadlocka, który powoduje marnowanie cykli procesora</li></ul>
+
+#### Przykład *Deadlock*
+
+```cpp
+#include <thread>
+#include <mutex>
+
+using namespace std;
+
+class X {
+    mutable mutex mtx_;
+    int value_ = 0;
+public:
+    explicit X(int v) : value(v) {}
+
+    bool operator< (const X & other) const {
+        lock_guard<mutex> ownGuard(mtx_);
+        locK_guard<mutex> otherGuard(other.mtx_);
+        return value_ < other.value_;
+    }
+};
+
+int main() {
+    X x1(5);
+    X x2(6);
+    thread t1([&](){ x1 < x2; });
+    thread t2([&](){ x2 < x1; });
+    t1.join();
+    t2.join();
+    return 0;
+}
+```
+
+Wykorzystanie słowa kluczowego `mutable` co oznacza
+
+Słowo kluczowe `explicit` blokuje niejawne konwersje.
 
 #### Przykład *Race conditions*
 
@@ -258,7 +374,7 @@ int main()
 }
 ```
 
-### 7. Thread sanitizer
+### 8. Thread sanitizer
 
 `>> g++ 1.cpp -lpthread -fsanitize=thread -O2 -g`
 
@@ -266,7 +382,7 @@ int main()
 
 `-g` - informacja dla debuggera
 
-### 8. Debugger
+### 9. Debugger
 
 `>> g++ 1.cpp -lpthread -g`
 
@@ -286,7 +402,7 @@ Komenda | Opis
 `del br` | Usunięcie wszystkich breakpointów
 CTRL + L | Odświeżenie widoku
 
-### 9. Mutexy
+### 10. Mutexy
 
 * [`std::mutex`]()
 * [`std::timed_mutex`, `std::recursive_mutex`, `std::recursive_timed_mutex`]()
@@ -342,7 +458,7 @@ Pozostałe mutexy | Opis
 `std::recursive_timed_mutex` | <ul><li> Połączenie `std::timed_mutex` oraz `std::recursive_mutex`
 `std::shared_mutex` | <ul><li> Możliwość pozyskiwania blokad współdzielonych przy pomocy <ul><li> `void lock_shared()` </li><li> `bool try_lock_shared()` </li><li> `bool try_lock_shared_for(real_time)` </li><li> `bool try_lock_shared_until(abs_time)` </li><li> `void unlock_shared()`</li></ul>
 
-### 10. Menadżery blokad
+### 11. Menadżery blokad
 
 Pozostałe mutexy | Opis
 ------------ | -------------
