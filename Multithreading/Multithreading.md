@@ -1,6 +1,6 @@
 # Spis treści
 
-## [Wielowątkowość: wątki](#wielow%C4%85tkowo%C5%9B%C4%87-w%C4%85tki-1)
+## [Wielowątkowość: wątki](#wielow%C4%85tkowo%C5%9B%C4%87-w%C4%85tki)
 
 1. [Kiedy stosować współbieżność?](#1-kiedy-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9B%C4%87)
 2. [Kiedy nie stosować współbieżności?](#2-kiedy-nie-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9Bci)
@@ -9,13 +9,18 @@
 5. [Wyjątki w wątkach](#5-wyj%C4%85tki-w-w%C4%85tkach)
 6. [Usypianie wątków](#6-usypianie-w%C4%85tk%C3%B3w)
 
-## [Współdzielenie danych](#wsp%C3%B3%C5%82dzielenie-danych-1)
+## [Współdzielenie danych](#wsp%C3%B3%C5%82dzielenie-danych)
 
 7. [Niebezpieczeństwa podczas używania wielowątkowości](#7-niebezpiecze%C5%84stwa-podczas-u%C5%BCywania-wielow%C4%85tkowo%C5%9Bci)
 8. [Thread sanitizer](#8-thread-sanitizer)
 9. [Debugger](#9-debugger)
 10. [Mutexy](#10-mutexy)
 11. [Menadżery blokad](#11-menad%C5%BCery-blokad)
+
+## [Zmienne atomowe](#zmienne-atomowe)
+
+12. Model pamięci
+13. 
 
 ## Wielowątkowość: wątki
 
@@ -362,10 +367,8 @@ int main() {
 
 * Słowo kluczowe `mutable` przy mutexie oznacza tyle, że nawet w przypadku metody `const` stan mutexu `mtx_` może zostać zmieniony (wywoływanie `lock()` i `unlock()` to w pewnym sensie jego modyfikacja)
 * Słowo kluczowe `explicit` przy konstruktorze blokuje niejawne konwersje
-    * Więcej informacji o `explicit`
+    * Więcej informacji o `explicit`:
         * https://www.youtube.com/watch?v=Rr1NX1lH3oE
-
-Jak nie ma explicit to w dowolnym miejscu 
 
 #### Przykład *Race conditions*
 
@@ -476,10 +479,10 @@ Pozostałe mutexy | Opis
 
 Pozostałe mutexy | Opis
 ------------ | -------------
-`std::lock_guard<mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdlock_guardmutex) </li><li> Najprostszy, główny wybór <ul><li> Nie ma funkcji odblokowania, blokuje tak długo jak żyje </li><li> Blokuje w konstruktorze </li><li> Odblokowuje w destruktorze</li></ul>
-`std::unique_lock<mutex>` | <ul><li> Opóźnione blokowanie </li><li> Próby zablokowania ograniczone czasowo </li><li> Blokowanie rekursywne </li><li> Podejmowanie nieblokujących prób pozyskania blokady - `try_lock()` </li><li> Obsługa `std::timed_mutex>` </li><li> Korzystanie ze zmiennych warunkowych (condition variable) </li><li> Niekopiowalny </li><li> Przenoszalny (`std::move`)</li></ul>
+`std::lock_guard<mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdlock_guardmutex) </li><li> Najprostszy, główny wybór <ul><li> Nie ma funkcji odblokowania, blokuje tak długo jak żyje </li><li> Blokuje w konstruktorze </li><li> Odblokowuje w destruktorze</li><li> Przyjmuje dodatkowy patarametr - [czytaj](#dodatkowe-parametry-dla-std:lock_guard-stdunique_lock-oraz-stdshared_lock) </li></ul>
+`std::unique_lock<mutex>` | <ul><li> Opóźnione blokowanie </li><li> Próby zablokowania ograniczone czasowo </li><li> Blokowanie rekursywne </li><li> Podejmowanie nieblokujących prób pozyskania blokady - `try_lock()` </li><li> Obsługa `std::timed_mutex>` </li><li> Korzystanie ze zmiennych warunkowych (condition variable) </li><li> Niekopiowalny </li><li> Przenoszalny (`std::move`)</li><li> Przyjmuje dodatkowy patarametr - [czytaj](#dodatkowe-parametry-dla-std:lock_guard-stdunique_lock-oraz-stdshared_lock) </li></ul>
 `std::scoped_lock` | <ul><li> [Przykład](#przyk%C5%82ad-stdscoped_lock) </li><li> **Przyjmuje różne mutexy** </li><li> Blokuje kilka mutexów </li><li> Zapobiega zakleszczeniom (deadlock) </li><li> Konstruktor blokuje wszystkie mutexy w bezpiecznej kolejności unikając blokad </li><li> Destruktor odblokowuje je w kolejności odwrotnej </li><li> Niekopiowalny</li></ul>
-`std::shared_lock<shared_mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdshared_lockstdshared_mutex) </li><li> Menadżer współdzielonych blokad do odczytu </li><li> Kilka wątków może współdzielić blokadę </li><li> Wątki zapisujące muszą pozyskać wyłączną blokadę (`std::lock_guard` lub `std::unique_lock`) </li><li> Te same własności co `std::unique_lock`</li></ul>
+`std::shared_lock<shared_mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdshared_lockstdshared_mutex) </li><li> Menadżer współdzielonych blokad do odczytu </li><li> Kilka wątków może współdzielić blokadę </li><li> Wątki zapisujące muszą pozyskać wyłączną blokadę (`std::lock_guard` lub `std::unique_lock`) </li><li> Te same własności co `std::unique_lock`</li><li> Przyjmuje dodatkowy patarametr - [czytaj](#dodatkowe-parametry-dla-std:lock_guard-stdunique_lock-oraz-stdshared_lock) </li></ul>
 
 #### Przykład `std::lock_guard<mutex>`
 
@@ -594,8 +597,9 @@ void writer() {
 #### Dodatkowe parametry dla `std::lock_guard`, `std::unique_lock` oraz `std::shared_lock`
 
 
-Wyżej wymienione blokady opcjonalnie przyjmują dodatkowy parametr:
-* `std::defer_lock_t`
+Wyżej wymienione blokady opcjonalnie przyjmują dodatkowy parametr w postaci `std::defer_lock` lub `std::adopt_lock`.
+
+* `std::defer_lock`
     * Nie blokuje w momencie utworzenia tylko oczekuje na operację `std::lock()`
     * Stanowi to alternatywę dla `std::scope_lock`, który pojawił się dopiero w C++17
 
@@ -610,19 +614,50 @@ bool operator<(const X & other) const
 }
 ```
 
-* `std::adopt_lock_t`
-    * XXX
-    * XXX
+* `std::adopt_lock`
+    * Informacja dla konstruktora, że otrzyma on już zablokowane mutexy (wcześniej pojawia się std::lock()`
+    * Działanie przeciwne do `std::defer_lock`
 
 ```cpp
 bool operator<(const X & other) const
 {
-    std::unique_lock<std::mutex> l1(mtx_, defer_lock);
-    std::unique_lock<std::mutex> l2(other.mtx_, defer_lock);
-    std::lock(l1, l2);
+    std::lock(mtx_, other.mtx_);
+    std::lock_guard<std::mutex> l1(mtx_, adopt_lock);
+    std::lock_guard<std::mutex> l2(other.mtx_, adopt_lock);
 
     return value_ < other.value_;
 }
 ```
 
-* `std::try_to_lock_t`
+**Funkcja `std::lock()` gwarantuje zablokowanie wszystkich mutexów bez zakleszczenia niezależnie od kolejności ich pozyskania.**
+
+## Zmienne atomowe
+
+### 1. Model pamięci
+
+Streszczenie:
+
+* Najmniejsza jednostka – 1 bajt
+* Każdy bajt ma unikalny adres w pamięci
+* Synchronizacja **nie jest potrzebna** jeśli zapisujemy coś wielowątkowo **do różnych obszarów pamięci**
+
+```cpp
+std::vector<int> v(10, 0);
+
+for (int = 0; i < 10; i++)
+    std::thread t([&]{ v[i] = i; });
+```
+
+* Synchronizacja **jest potrzebna** jeśli zapisujemy coś wielowątkowo **do tych samych obszarów pamięci**
+
+```cpp
+std::vector<int> v;
+
+for (int = 0; i < 10; i++)
+    std::thread t([&]{ v.emplace_back(i); });
+```
+
+* Synchronizacja jest potrzebna jeśli conajmniej jeden wątek zapisuje, a inne odczytują ten sam obszar pamięci
+* Brak synchronizacji jeśli jest wymagana to *wyścig/undefined behaviour*
+* Użycie `const` nie wymaga synchronizacji
+* Link do pełnego artykułu - [czytaj](https://en.cppreference.com/w/cpp/language/memory_model)
