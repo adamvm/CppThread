@@ -6,7 +6,7 @@
 2. [Kiedy nie stosować współbieżności?](#2-kiedy-nie-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9Bci)
 3. [Wątki, podstawowe operacje na wątkach](#3-w%C4%85tki-podstawowe-operacje-na-w%C4%85tkach)
 4. [Przekazywanie argumentów do funkcji w wątku](#4-przekazywanie-argument%C3%B3w-do-funkcji-w-w%C4%85tku)
-5. [Wyjątki w wątkach]()
+5. [Wyjątki w wątkach](#5-wyj%C4%85tki-w-w%C4%85tkach)
 6. [Usypianie wątków](#6-usypianie-w%C4%85tk%C3%B3w)
 
 ## [Współdzielenie danych](#wsp%C3%B3%C5%82dzielenie-danych-1)
@@ -313,7 +313,7 @@ Wyjście:
 
 Zjawisko | Opis
 ------------ | -------------
-Deadlock | <ul><li> [Przykład](#przyk%C5%82ad-deadlock) </li><li> Sytuacja, w której conajmniej dwa różne wątki czekają na siebie i żadna nie może pójść dalej</li><li> Występuje losowo przy niektórych uruchomieniach programu </li><li> Zalecane użycie `std::scoped_lock` do rozwiązania problemu zakleszczenia</li></ul>
+Deadlock | <ul><li> [Przykład](#przyk%C5%82ad-deadlock) </li><li> Sytuacja, w której conajmniej dwa różne wątki czekają na siebie i żadna nie może pójść dalej</li><li> Występuje losowo przy niektórych uruchomieniach programu </li><li> Zalecane użycie `std::scoped_lock` do rozwiązania problemu zakleszczenia</li><li> Operacja czekania na wątek nie blokuje procesora </li></ul>
 Race conditions | <ul><li> [Przykład](#przyk%C5%82ad-race-conditions) </li><li> Sytuacja, w której dwa lub więcej procesów wykonuje operację na zasobach dzielonych, a ostateczny wynik tej operacji jest zależny od momentu jej realizacji </li><li> Wyścig = undefined behaviour </li><li> Aby zapobiec warunkom wyścigu należy stworzyć mechanizm zabraniający więcej niż jednemu wątkowi dostępu do zasobów dzielonych w tym samym czasie </li><li> Do wykrywania tego zjawiska służy tzw. Thread Sanitizer (*TSan*, *Data race detector* wbudowany g++ oraz clang) </li><li> Debugger spowalnia wykonywanie operacji dlatego czasem może być ciężko wykryć coś takiego</li></ul>
 Data races | <ul><li>Wyścig na danych, wartość zmiennej będzie zależeć od tego jak zostaną zakolejkowane wątki i może być różna przy różnych uruchomieniach programu</li></ul>
 Zagłodzenie procesu/wątku | <ul><li> Sytuacja, w której przynajmniej jeden wątek nigdy nie dostanie wszystkich wymaganych zasobów</li></ul>
@@ -328,32 +328,44 @@ Livelock | <ul><li> Podobny do Deadlock przy czym stan dwóch procesów związan
 using namespace std;
 
 class X {
+
     mutable mutex mtx_;
     int value_ = 0;
+
 public:
     explicit X(int v) : value(v) {}
 
     bool operator< (const X & other) const {
         lock_guard<mutex> ownGuard(mtx_);
         locK_guard<mutex> otherGuard(other.mtx_);
+        // Rozwiazanie:
+        // std::scoped_lock l(mtx_, other.mtx_);
+
         return value_ < other.value_;
     }
 };
 
 int main() {
+
     X x1(5);
     X x2(6);
+
     thread t1([&](){ x1 < x2; });
     thread t2([&](){ x2 < x1; });
+
     t1.join();
     t2.join();
+
     return 0;
 }
 ```
 
-Wykorzystanie słowa kluczowego `mutable` co oznacza
+* Słowo kluczowe `mutable` przy mutexie oznacza tyle, że nawet w przypadku metody `const` stan mutexu `mtx_` może zostać zmieniony (wywoływanie `lock()` i `unlock()` to w pewnym sensie jego modyfikacja)
+* Słowo kluczowe `explicit` przy konstruktorze blokuje niejawne konwersje
+    * Więcej informacji o `explicit`
+        * https://www.youtube.com/watch?v=Rr1NX1lH3oE
 
-Słowo kluczowe `explicit` blokuje niejawne konwersje.
+Jak nie ma explicit to w dowolnym miejscu 
 
 #### Przykład *Race conditions*
 
@@ -381,6 +393,8 @@ int main()
 `>> ./a.out`
 
 `-g` - informacja dla debuggera
+
+Jeśli nie ma "niebezpieczeństw", *thread sanitizer* nie pokaże "raportu".
 
 ### 9. Debugger
 
@@ -462,10 +476,10 @@ Pozostałe mutexy | Opis
 
 Pozostałe mutexy | Opis
 ------------ | -------------
-`std::lock_guard<mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdlock_guardmutex) </li><li> Najprostszy, główny wybór <ul><li> Nie ma funkcji odblokowania, blokuje tak długo jak żyje </li><li> Blokuje w konstruktorze </li><li> Odblokowuje w destruktorze</li></ul></li></ul>
+`std::lock_guard<mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdlock_guardmutex) </li><li> Najprostszy, główny wybór <ul><li> Nie ma funkcji odblokowania, blokuje tak długo jak żyje </li><li> Blokuje w konstruktorze </li><li> Odblokowuje w destruktorze</li></ul>
 `std::unique_lock<mutex>` | <ul><li> Opóźnione blokowanie </li><li> Próby zablokowania ograniczone czasowo </li><li> Blokowanie rekursywne </li><li> Podejmowanie nieblokujących prób pozyskania blokady - `try_lock()` </li><li> Obsługa `std::timed_mutex>` </li><li> Korzystanie ze zmiennych warunkowych (condition variable) </li><li> Niekopiowalny </li><li> Przenoszalny (`std::move`)</li></ul>
-`std::scoped_lock<MUTEX'es>` | <ul><li> **Przyjmuje różne mutexy** </li><li> Blokuje kilka mutexów </li><li> Zapobiega zakleszczeniom (deadlock) </li><li> Konstruktor blokuje wszystkie mutexy w bezpiecznej kolejności unikając blokad </li><li> Destruktor odblokowuje je w kolejności odwrotnej </li><li> Niekopiowalny</li></ul>
-`std::shared_lock<shared_mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdshared_lockmutexes) </li><li> Menadżer współdzielonych blokad do odczytu </li><li> Kilka wątków może współdzielić blokadę </li><li> Wątki zapisujące muszą pozyskać wyłączną blokadę (`std::lock_guard` lub `std::unique_lock`) </li><li> Te same własności co `std::unique_lock`</li></ul>
+`std::scoped_lock` | <ul><li> [Przykład](#przyk%C5%82ad-stdscoped_lock) </li><li> **Przyjmuje różne mutexy** </li><li> Blokuje kilka mutexów </li><li> Zapobiega zakleszczeniom (deadlock) </li><li> Konstruktor blokuje wszystkie mutexy w bezpiecznej kolejności unikając blokad </li><li> Destruktor odblokowuje je w kolejności odwrotnej </li><li> Niekopiowalny</li></ul>
+`std::shared_lock<shared_mutex>` | <ul><li> [Przykład](#przyk%C5%82ad-stdshared_lockstdshared_mutex) </li><li> Menadżer współdzielonych blokad do odczytu </li><li> Kilka wątków może współdzielić blokadę </li><li> Wątki zapisujące muszą pozyskać wyłączną blokadę (`std::lock_guard` lub `std::unique_lock`) </li><li> Te same własności co `std::unique_lock`</li></ul>
 
 #### Przykład `std::lock_guard<mutex>`
 
@@ -506,9 +520,51 @@ int main()
 }
 ```
 
+#### Przykład `std::scoped_lock`
+
+```cpp
+#include <iostream>
+#include <mutex>
+#include <thread>
+
+class X {
+    mutable std::mutex mtx_;
+    int value_ = 0;
+
+public:
+    explicit X(int v) : value_(v) {}
+
+    bool operator<(const X & other) const {
+        std::scoped_lock l(mtx_, other.mtx_);
+        return value_ < other.value_;
+    }
+};
+
+int main() {
+
+    X x1(5);
+    X x2(6);
+
+    std::thread t1([&] {
+        if (x1 < x2)
+            std::cout << "x1 is less" << std::endl;
+    });
+
+    std::thread t2([&] {
+        if (x2 < x1)
+            std::cout << "x2 is less" << std::endl;
+    });
+
+    t1.join();
+    t2.join();
+
+    return 0;
+}
+```
+
 #### Przykład `std::shared_lock<std::shared_mutex>`
 
-```C
+```cpp
 #include <deque>
 #include <shared_mutex>
 
@@ -534,3 +590,39 @@ void writer() {
     ids[index] = newValue();
 }
 ```
+
+#### Dodatkowe parametry dla `std::lock_guard`, `std::unique_lock` oraz `std::shared_lock`
+
+
+Wyżej wymienione blokady opcjonalnie przyjmują dodatkowy parametr:
+* `std::defer_lock_t`
+    * Nie blokuje w momencie utworzenia tylko oczekuje na operację `std::lock()`
+    * Stanowi to alternatywę dla `std::scope_lock`, który pojawił się dopiero w C++17
+
+```cpp
+bool operator<(const X & other) const
+{
+    std::unique_lock<std::mutex> l1(mtx_, defer_lock);
+    std::unique_lock<std::mutex> l2(other.mtx_, defer_lock);
+    std::lock(l1, l2);
+
+    return value_ < other.value_;
+}
+```
+
+* `std::adopt_lock_t`
+    * XXX
+    * XXX
+
+```cpp
+bool operator<(const X & other) const
+{
+    std::unique_lock<std::mutex> l1(mtx_, defer_lock);
+    std::unique_lock<std::mutex> l2(other.mtx_, defer_lock);
+    std::lock(l1, l2);
+
+    return value_ < other.value_;
+}
+```
+
+* `std::try_to_lock_t`
