@@ -29,7 +29,7 @@
 16. [Aktywne czekanie (spinlock)](#16-aktywne-czekanie-spinlock)
 17. [`std::condition_variable`](#17-stdcondition_variable)
 18. [`std::condition_variable_any`](#18-stdcondition_variable_any)
-19. [Zagrożenia dla `std::condition_variable` / `std::condition_variable_any`](#19-zagro%C5%BCenia-dla-stdcondition_variable-stdcondition_variable_any)
+19. [Zagrożenia dla `std::condition_variable` / `std::condition_variable_any`](#19-zagro%C5%BCenia-dla-stdcondition_variable--stdcondition_variable_any)
 
 ## Wielowątkowość: wątki
 
