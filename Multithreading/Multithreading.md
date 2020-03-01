@@ -29,6 +29,7 @@
 16. [Aktywne czekanie (spinlock)](#16-aktywne-czekanie-spinlock)
 17. [`std::condition_variable`](#17-stdcondition_variable)
 18. [`std::condition_variable_any`](#18-stdcondition_variable_any)
+19. [Zagrożenia dla `std::condition_variable` / `std::condition_variable_any`](#19-zagro%C5%BCenia-dla-stdcondition_variable-stdcondition_variable_any)
 
 ## Wielowątkowość: wątki
 
@@ -851,3 +852,12 @@ Najważniejsze operacje | <ul><li> `wait()` – oczekuje na zmianę / blokuje ob
 `std::condition_variable_any` | Opis
 ------------ | -------------
 Cechy | <ul><li> Działa z każdym rodzajem blokad </li><li> Te same właściwości co `std::condition_variable` </li></ul>
+
+### 19. Zagrożenia dla `std::condition_variable` / `std::condition_variable_any`
+
+Zagrożenie | Opis
+------------ | -------------
+Fałszywe przebudzenie (spurious wakeup) | <ul><li> Wątek czekający na zmiennej warunku cyklicznie co pewien okres czasu wybudza się i sprawdza czy nie przyszła notyfikacja</li><li> W celu oczekiwania na zmiennej warunku wymagana co najmniej blokada `std::unique_lock`, gdyż podczas uśpienia wątek ją odblokowuje, a gdy wybudza się, aby sprawdzić notyfikację blokuje ją ponownie na chwilę, po czym znów ją odblokowuje i śpi dalej </li><li> Predykat dodany do funkcji `wait()` zapobiega fałszywym przebudzeniom, gdyż dodaje dodatkowy warunek, który musi być spełniony, aby wątek się wybudził </li></ul>
+Utracona notyfikacja (lost wakeup) | <ul><li> Jeśli notyfikacja została wysłana zanim wątek oczekiwał na zmiennej, to jest ona utracona i nie wybudzi ona wątku </li><li> Problem można obejść, gdy pojawi się fałszywe przebudzenie </li><li> Jeśli wątek oczekiwał na zmiennej warunku z predykatem, to predykat musi być spełniony, inaczej fałszywe przebudzenie nie nastąpi </li></ul>
+
+
