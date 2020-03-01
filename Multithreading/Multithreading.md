@@ -22,13 +22,13 @@
 12. [Model pamięci](#12-model-pami%C4%99ci)
 13. [Jak synchronizować?](#13-jak-synchronizowa%C4%87)
 14. [`std::atomic`](#14-stdatomic)
-15. [`std::atomic` i `std::memory_order`](#15-stdatomic-i-stdmemoryorder)
+15. [`std::atomic` i `std::memory_order`](#15-stdatomic-i-stdmemory_order)
 
 ## [Zmienne warunku](#zmienne-warunku-1)
 
 16. [Aktywne czekanie (spinlock)](#16-aktywne-czekanie-spinlock)
 17. [`std::condition_variable`](#17-stdcondition_variable)
-18. [`std::condition_variable_any`](#18-stdcondition_variable_any`)
+18. [`std::condition_variable_any`](#18-stdcondition_variable_any)
 
 ## Wielowątkowość: wątki
 
