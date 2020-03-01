@@ -17,9 +17,9 @@
 10. [Mutexy](#10-mutexy)
 11. [Menadżery blokad](#11-menad%C5%BCery-blokad)
 
-## [Zmienne atomowe](#zmienne-atomowe)
+## [Zmienne atomowe](#zmienne-atomowe-1)
 
-12. Model pamięci
+12. [Model pamięci](#1-model-pami%C4%99ci)
 13. 
 
 ## Wielowątkowość: wątki
@@ -633,9 +633,7 @@ bool operator<(const X & other) const
 
 ## Zmienne atomowe
 
-### 1. Model pamięci
-
-Streszczenie:
+### 12. Model pamięci
 
 * Najmniejsza jednostka – 1 bajt
 * Każdy bajt ma unikalny adres w pamięci
@@ -661,3 +659,37 @@ for (int = 0; i < 10; i++)
 * Brak synchronizacji jeśli jest wymagana to *wyścig/undefined behaviour*
 * Użycie `const` nie wymaga synchronizacji
 * Link do pełnego artykułu - [czytaj](https://en.cppreference.com/w/cpp/language/memory_model)
+
+### 13. Jak synchronizować?
+
+```cpp
+int a = 0;
+std::mutex m;
+
+std::thread t1([&] {
+std::lock_guard<mutex> lg(m);
+a = 1;
+});
+
+std::thread t2([&] {
+std::lock_guard<mute> lg(m);
+a = 2;
+});
+```
+
+Lepsze rozwiązanie, które chroni przed wyścigiem (data-race) to zastosowanie zmiennej atomowej (`std::atomic`). W ten sposób zapewniamy odpowiednie porządkowanie operacji dostępu do pamięci.
+
+```cpp
+std::atomic<int> a = 0;
+std::thread t1([&]{ a = 1; });
+std::thread t2([&]{ a = 2; });
+```
+
+### 14. `std::atomic`
+
+
+`std::atomic` | Opis
+------------ | -------------
+Cechy | <ul><li> Umożliwiają jednoczesny zapis i odczyt <ul><li> Nie ma potrzeby dodatkowego blokowania </li></ul></li><li> Pozwalają na prostą arytmetykę i operacje bitowe </li><li> Wykorzystuje się tylko z typami prostymi </li></ul>
+Najważniejsze operacje | <ul><li> `store()` - zapisuje wartość zmiennej atomowej (można podać dodatkowo `std::memory_order`) </li><li> `operator=()` - zapisuje wartość w zmiennej atomowej </li><li> `load()` - odczytuje wartość ze zmiennej atomowej (można podać dodatkowo `std::memory_order`) </li><li> `operator T()` - odczytuje wartość ze zmiennej atomowej</li></ul>
+
