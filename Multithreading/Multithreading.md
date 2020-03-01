@@ -1,6 +1,6 @@
 # Spis treści
 
-## [Wielowątkowość: wątki](#wielow%C4%85tkowo%C5%9B%C4%87-w%C4%85tki)
+## [Wielowątkowość: wątki](#wielow%C4%85tkowo%C5%9B%C4%87-w%C4%85tki-1)
 
 1. [Kiedy stosować współbieżność?](#1-kiedy-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9B%C4%87)
 2. [Kiedy nie stosować współbieżności?](#2-kiedy-nie-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9Bci)
@@ -9,7 +9,7 @@
 5. [Wyjątki w wątkach](#5-wyj%C4%85tki-w-w%C4%85tkach)
 6. [Usypianie wątków](#6-usypianie-w%C4%85tk%C3%B3w)
 
-## [Współdzielenie danych](#wsp%C3%B3%C5%82dzielenie-danych)
+## [Współdzielenie danych](#wsp%C3%B3%C5%82dzielenie-danych-1)
 
 7. [Niebezpieczeństwa podczas używania wielowątkowości](#7-niebezpiecze%C5%84stwa-podczas-u%C5%BCywania-wielow%C4%85tkowo%C5%9Bci)
 8. [Thread sanitizer](#8-thread-sanitizer)
@@ -19,8 +19,16 @@
 
 ## [Zmienne atomowe](#zmienne-atomowe-1)
 
-12. [Model pamięci](#1-model-pami%C4%99ci)
-13. 
+12. [Model pamięci](#12-model-pami%C4%99ci)
+13. [Jak synchronizować?](#13-jak-synchronizowa%C4%87)
+14. [`std::atomic`](#14-stdatomic)
+15. [`std::atomic` i `std::memory_order`](#15-stdatomic-i-stdmemoryorder)
+
+## [Zmienne warunku](#zmienne-warunku-1)
+
+16. [Aktywne czekanie (spinlock)](#16-aktywne-czekanie-spinlock)
+17. [`std::condition_variable`](#17-stdcondition_variable)
+18. [`std::condition_variable_any`](#18-stdcondition_variable_any`)
 
 ## Wielowątkowość: wątki
 
@@ -687,9 +695,159 @@ std::thread t2([&]{ a = 2; });
 
 ### 14. `std::atomic`
 
-
 `std::atomic` | Opis
 ------------ | -------------
-Cechy | <ul><li> Umożliwiają jednoczesny zapis i odczyt <ul><li> Nie ma potrzeby dodatkowego blokowania </li></ul></li><li> Pozwalają na prostą arytmetykę i operacje bitowe </li><li> Wykorzystuje się tylko z typami prostymi </li></ul>
+Cechy | <ul><li> Umożliwiają jednoczesny zapis i odczyt <ul><li> Nie ma potrzeby dodatkowego blokowania </li></ul></li><li> Pozwalają na prostą arytmetykę i operacje bitowe (**te których nie ma w standardzie języka wymagają blokowania mutexem**) </li><li> Wykorzystuje się tylko z typami prostymi (liczby i wskaźniki) </li></ul>
 Najważniejsze operacje | <ul><li> `store()` - zapisuje wartość zmiennej atomowej (można podać dodatkowo `std::memory_order`) </li><li> `operator=()` - zapisuje wartość w zmiennej atomowej </li><li> `load()` - odczytuje wartość ze zmiennej atomowej (można podać dodatkowo `std::memory_order`) </li><li> `operator T()` - odczytuje wartość ze zmiennej atomowej</li></ul>
 
+```cpp
+// use store() /  load()
+#include <atomic>
+#include <iostream>
+#include <mutex>
+#include <thread>
+#include <vector>
+
+std::vector<int> generateContainer()
+{
+    std::vector<int> input = {2, 4, 6, 8, 10, 1, 3, 5, 7, 9};
+    std::vector<int> output;
+    std::vector<std::thread> threads;
+    std::mutex m;
+
+    // należy jeszcze wyciągnąć lambdę przed pętlę...
+    for (auto i = 0u; i < input.size(); i++) {
+        threads.emplace_back([&, i]{
+            std::lock_guard<std::mutex> l(m);
+            // wstawianie wątków do wektora jest bezpieczne (bo jest sekwencyjne)
+            // należy zabezpieczyć wstawianie liczb do wektora
+            // bo może być problem z iteratorami
+            output.push_back(input[i]);
+        });
+    }
+
+    // "i" przekazujemy przez kopię
+    // 1 powód: jeśli "i" przekażemy przez referencję to wszystkie wątki mogą mieć
+    // taką samą wartość "i", np. 5
+    // 2 powód: część wstawiania może się odbyć dopiero przed join(), a wtedy
+    // zmienna "i" już nie istnieje (dangling reference)
+
+    for (auto && t : threads)
+        t.join();
+
+    return output;
+}
+
+std::vector<int> generateOtherContainer()
+{
+    int start {5};
+    // nie trzeba std::atomic bo mamy mutex na if oraz else
+    std::atomic<bool> add {true};
+    std::vector<int> output;
+    std::vector<std::thread> threads;
+    std::mutex m;
+
+    for (int i = 0; i < 10; i++) {
+        threads.emplace_back([&, i]{
+            if (add)
+            {
+                std::lock_guard<std::mutex> l(m);
+                output.push_back(start+=i);
+            }
+            else
+            {
+                std::lock_guard<std::mutex> l(m);
+                output.push_back(start-=i);
+            }
+            add = !add;
+        });
+    }
+
+    for (auto && t : threads)
+        t.join();
+
+    return output;
+}
+
+void powerContainer(std::vector<int>& input)
+{
+    std::vector<std::thread> threads;
+
+    for (auto i = 0u; i < input.size(); i++)
+        threads.emplace_back([&, i]{ input[i]*=input[i]; });
+    // nie ma potrzeby stosowania mutexu
+    // za każdym razem zapisujemy w inny obszar pamięci
+
+    for (auto && t : threads)
+        t.join();
+}
+
+void printContainer(const std::vector<int>& c)
+{
+    for (const auto & value : c)
+        std::cout << value << " ";
+    std::cout << std::endl;
+}
+
+int main() {
+
+    auto container1 = generateContainer();
+    printContainer(container1);
+    powerContainer(    // należy jeszcze wyciągnąć lambdę przed pętlę...container1);
+    printContainer(container1);
+
+    auto container2 = generateOtherContainer();
+    printContainer(container2);
+    powerContainer(container2);
+    printContainer(container2);
+
+    return 0;
+}
+```
+
+### 15. `std::atomic` i `std::memory_order`
+
+`std::memory_order` pozwala na dodatkową otymalizację i określa on typ synchronizacji. Więcej informacji - [czytaj](https://en.cppreference.com/w/cpp/atomic/memory_order).
+
+Typ `std::memory_order` | Opis
+------------ | -------------
+`memory_order_relaxed` | <ul><li> Nie ma żadnej synchronizacji (tak jakby nie było `std::atomic`)</li></ul>
+`memory_order_consume` | <ul><li> Do odczytu </li><li> Zagwarantowane, że kompilator nie zmieni kolejności operacji przed `load()` i `store()` </li></ul>
+`memory_order_acquire` | <ul><li> Do odczytu </li><li> Zagwarantowane, że kompilator nie zmieni kolejności operacji przed `load()` i `store()` </li></ul>
+`memory_order_release` | <ul><li> Do zapisu </li><li> Zagwarantowane, że kompilator nie zmieni kolejności operacji **po** `load()` i `store()` </li></ul>
+`memory_order_acq_rel` | <ul><li> Do zapisu </li><li> Zagwarantowane, że kompilator nie zmieni kolejności operacji **po** `load()` i `store()` </li></ul> 
+`memory_order_seq_cst` | <ul><li> **Domyślny wybór (jeśli nie wybrany inny)** </li><li> Blokowany jednoczesny odczyt i zapis </li></ul>
+
+## Zmienne warunku
+
+### 16. Aktywne czekanie (spinlock)
+
+* Aktywne czekanie (busy waiting) to stan, w którym wątek ciągle sprawdza, czy został spełniony pewien warunek
+* Inna nazwa tego problemu to wirująca blokada (spinlock)
+* Problem rozwiązuje **zmienna warunku** (condition variable)
+
+```cpp
+void saveToFile(StringQueue & sq) {
+
+    ofstream file("/tmp/sth.txt");
+
+    while (file) {
+        while (sq.empty()) { /* nop */ }
+        
+        file << sq.pop() << endl;
+    }
+}
+```
+
+### 17. `std::condition_variable`
+
+`std::condition_variable` | Opis
+------------ | -------------
+Cechy | <ul><li> Działa tylko z `std::unique_lock` </li><li> Niekopiowalny </li><li> Wymaga `#include <condition_variable>` </li></ul>
+Najważniejsze operacje | <ul><li> `wait()` – oczekuje na zmianę / blokuje obecny wątek dopóki nie zostanie on wybudzony </li><ul><li> Wątek który zablokował mutex, trafił na `wait()` ale nie otrzymał ani `notify_one()`, ani `notify_all()` **zwalnia mutex** i jest usypiany. Ponadto, mimo że nie było żadnego `notify()` może się on spontanicznie **wybudzić i (spróbować) zablokować z powrotem mutex by sprawdzić czy był `notify()` oraz (opcjonalnie) czy warunek podany w predykacie został spełniony**</li><li> Wymaga przekazania w argumencie: <ul><li> `std::unique_lock` lub... </li><li> `std::unique_lock` oraz predykat </li></ul></li></ul></li><li> `notify_one()` – wybudza jeden z wątków oczekujących na zmianę <ul><li> Nie mamy kontroli nad tym, który z wątków zostanie powiadomiony  </li><li> Jeśli na zmiennej warunku czeka kilka wątków i każdy ma inny predykat, to jego użycie może spowodować zakleszczenie. Wybudzony może zostać wątek, dla którego warunek nie został spełniony i jeśli żaden inny wątek nie zawoła `nofity_one()` lub `notify_all()` to wszystkie będą czekać </li></ul></li><li> `notify_all()` – wybudza wszystkie wątki czekające na zmianę </li><ul><li>  Wątki te mogą konkurować o zasoby </li></ul><li> `wait_for()` - przyjmuje okres czasu po którym naśtąpi wybudzenie </li><ul><li> Opcjonalnie zwraca powód wybudzenia (czy z powodu timeout'u lub nie) </li></ul><li> `wait_until()` - przyjmuje punkt w czasie, w którym nastąpi wybudzenie </li><ul><li> Opcjonalnie zwraca powód wybudzenia (czy z powodu timeout'u lub nie) </li></ul></ul>
+
+### 18. `std::condition_variable_any`
+
+`std::condition_variable_any` | Opis
+------------ | -------------
+Cechy | <ul><li> Działa z każdym rodzajem blokad </li><li> Te same właściwości co `std::condition_variable` </li></ul>
