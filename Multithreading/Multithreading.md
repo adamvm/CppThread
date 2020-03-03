@@ -31,12 +31,19 @@
 18. [`std::condition_variable_any`](#18-stdcondition_variable_any)
 19. [Zagrożenia dla `std::condition_variable` / `std::condition_variable_any`](#19-zagro%C5%BCenia-dla-stdcondition_variable--stdcondition_variable_any)
 
-## Komunikacja jednokierunkowa (future, promise)
+## [Komunikacja jednokierunkowa (future, promise)]()
 
-20. [XXX]()
-21. [XXX]()
-22. [XXX]()
-23. [XXX]()
+20. [Co to?]()
+21. [Funkcje `std::future`]()
+22. [Obsługa wyjątków w `std::promise`]()
+23. [`std::shared_future`]()
+
+## [Zadania asynchroniczne (`std::assync`)]()
+
+24. [Co to?]()
+25. [XXX]()
+26. [XXX]()
+27. [XXX]()
 
 ## Wielowątkowość: wątki
 
@@ -869,45 +876,162 @@ Zagrożenie | Opis
 Fałszywe przebudzenie (spurious wakeup) | <ul><li> Wątek czekający na zmiennej warunku cyklicznie co pewien okres czasu wybudza się i sprawdza czy nie przyszła notyfikacja</li><li> W celu oczekiwania na zmiennej warunku wymagana co najmniej blokada `std::unique_lock`, gdyż podczas uśpienia wątek ją odblokowuje, a gdy wybudza się, aby sprawdzić notyfikację blokuje ją ponownie na chwilę, po czym znów ją odblokowuje i śpi dalej </li><li> Predykat dodany do funkcji `wait()` zapobiega fałszywym przebudzeniom, gdyż dodaje dodatkowy warunek, który musi być spełniony, aby wątek się wybudził </li></ul>
 Utracona notyfikacja (lost wakeup) | <ul><li> Jeśli notyfikacja została wysłana zanim wątek oczekiwał na zmiennej, to jest ona utracona i nie wybudzi ona wątku </li><li> Problem można obejść, gdy pojawi się fałszywe przebudzenie </li><li> Jeśli wątek oczekiwał na zmiennej warunku z predykatem, to predykat musi być spełniony, inaczej fałszywe przebudzenie nie nastąpi </li></ul>
 
-## Komunikacja jednokierunkowa (future, promise)
+## Komunikacja jednokierunkowa (`std::future` i `std::promise`)
 
 ### 20. Co to?
 
-* `std::future` i `std::promise` razem tworzą jednokierunkowy kanał komunikacji
-    * Za ich pomocą można uzależnić, że jeden wątek nie pójdzie dalej póki inny wątek czegoś nie zrobi
+* `std::future` i `std::promise` razem tworzą jednokierunkowy kanał komunikacji między **dwoma wątkami**
 * Wątek, który "ma coś zrobić" jako argument oprócz lambdy dostaje też `std::promise`
 * Wątek, który ma odebrać wynik obliczeń wywołuje `future.get()`
-
 
 ```cpp
 std::promise<int> promise; // typ wyniku
 std::future<int> future = promise.get_future(); 
 // tworzymy future przez wywołanie get_future() na std::promise
-// w ten sposób tworzy się kanał
+// w ten sposób tworzy się kanał komunikacji
+// kolejne wywolanie promise.get_future() rzuci wyjątek
 
 auto function = [](std::promise<int> promise
 {
-    // ustawiamy promise jakąś wartość
     promise.set_value(10;)
+    // ustawiamy promise jakąś wartość
 }
 
-// do osobnego wątku przekazujemy lambdę z promise'm
 std::thread t(function, std::move(promise));
+// do osobnego wątku przekazujemy lambdę z promise'm
 
-// inny wątek woła get() by wyłuskać wartość
 std::cout << future.get() << std::endl;
+// inny wątek woła get() by wyłuskać wartość
+// kolejne wywołanie get() rzuci wyjątek
+
 t.join();
 ```
 
-* `std::shared_future` - jeden wątek nadaje, ale wiele odbiera
+### 21. Funkcje `std::future`
+
+Funkcja | Opis
+------------ | -------------
+`get()` | <ul><li> **Służy do synchronizacji wątków** tj. jeden wątek nie pójdzie dalej tylko poczeka do momentu aż inny wątek czegoś nie zrobi<ul><li> `get()` czeka na inny wątek **i pobiera jego wynik** </li></ul></li><li> Można wywołać jednokrotnie </li><ul><li> Kolejne wywołanie rzuci wyjątek </li></ul></ul>
+`valid()` | <ul><li> Zwraca `true` jeśli można go użyć (tzn. można na nim wywołać `get()` lub `wait()` (innymi słowy czy `std::future` nie został już "zużyty")</li></ul>
+`wait()` | <ul><li> **Służy do synchronizacji wątków** tj. jeden wątek nie pójdzie dalej tylko poczeka do momentu aż inny wątek czegoś nie zrobi<ul><li> `wait()` nie pobiera wartości tylko czeka aż będzie dostępna </li></ul></li><li> Można wywołać wielokrotnie </li><ul><li> W przeciwieństwie do `wait()`, `get()` pobiera wartość i można ją wywołać tylko raz </li></ul></ul>
+
+### 22. Obsługa wyjątków w `std::promise`
+
+* Na `std::promise` oprócz `set.value()` można wywołać `set.exception()`
+* Wywołanie `get()` na "drugim" wątku rzuci wyjątek
+
+```cpp
+promise.set_exception(std::make_exception_ptr(e));
+
+try {
+// ...
+} catch (...) {
+promise.set_exception(std::current_exception());
+}
+```
+
+### 23. `std::shared_future`
+
+* Jeden wątek nadaje, ale wiele odbiera
+    * Obiekt `std::promise` tworzymy tylko jeden
+* Jedyna różnica w zastosowaniu to taka że zamiast `std::future<int> f = promise.get_future()` piszemy `std::shared_future<int> f = promise.get_future().share()`
+    * Każdy wątek powinien utworzyć swój własny obiekt `shared_future`
+* Kopiowalny
+* Przenoszalny
+
+## Zadania asynchroniczne (`std::assync`)
+
+### 24. Co to?
+
+* Przykazując funkcję do `std::assync` zwróci on obiekt `std::future` za pomocą którego można się dostać do jego rezultatu (jak tylko będzie on dostępy)
+    * Wywołując `get()` przed tym jak zostanie "obliczony" wynik, wątek poczeka na niego...
+* Przyjmuje parametr *policy*: *async* lub *deferred* (**niepodanie żadnego parametru to undefined behaviour (od C++14)** natomiast **podając oba nie wiadomo które wybierze kompilator (zależy od implementacji))**
+    * *async* - ma być wykonane od razu, asynchronicznie (w osobnym wątku)
+    * *deferred* - dopiero jak ktoś wywoła `get()` to zostanie to obliczone (bez dodatkowego wątku)
+    * *async* + *deferred* - 
+* `std::assync` może sam stworzyć wątek (ale nie musi)
+* Obsługa wyjątków przez `std::promise` i `std::future`
+* Wymaga `#include <future>`
+
+```cpp
+std::future<int> f = std::assync(function)
+std::cout << f.get() << std::endl;
+```
+```cpp
+#include <future>
+#include <vector>
+#include <iostream>
+#include <chrono>
+using namespace std;
+
+int main()
+{
+    auto f1 = async([] {
+        cout << "f1 started\n";
+        this_thread::sleep_for(1s);
+        return 42;
+    });
+    cout << "f1 spawned\n";
+    
+    auto f2 = async(launch::async, []{
+        cout << "f2 started\n";
+        this_thread::sleep_for(1s);
+        return 2 * 42;
+    });
+    cout << "f2 spawned\n";
+    
+    auto f3 = async(launch::deferred, []{
+        cout << "f3 started\n";
+        this_thread::sleep_for(1s);
+        return 3 * 42;
+    });
+    cout << "f3 spawned\n";
+
+    cout << "Getting f1 result\n";
+    auto v1 = f1.get();
+    cout << "Got f1 result\n";
+    
+    cout << "Getting f2 result\n";
+    auto v2 = f2.get();
+    cout << "Got f2 result\n";
+    
+    cout << "Getting f3 result\n";
+    auto v3 = f3.get();
+    cout << "Got f3 result\n";
+    
+    vector<int> numbers = { v1, v2, v3 };
+    for (const auto & item : numbers)
+        cout << item << '\n';
+    
+    return 0;
+}
+```
+Wyjście:
+```bash
+>> f1 spawned
+>> f1 started
+>> f2 spawned
+>> f3 spawned
+>> Getting f1 result
+>> f2 started
+>> Got f1 result
+>> Getting f2 result
+>> Got f2 result
+>> Getting f3 result
+>> f3 started
+>> Got f3 result
+>> 42
+>> 84
+>> 126
+```
 
 
-### 21. 
+### 25. XXX
 
 
 
-### 22.
+### 26. XXX
 
 
 
-### 23.
+### 27. XXX
