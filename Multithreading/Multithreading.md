@@ -31,6 +31,13 @@
 18. [`std::condition_variable_any`](#18-stdcondition_variable_any)
 19. [Zagrożenia dla `std::condition_variable` / `std::condition_variable_any`](#19-zagro%C5%BCenia-dla-stdcondition_variable--stdcondition_variable_any)
 
+## Komunikacja jednokierunkowa (future, promise)
+
+20. [XXX]()
+21. [XXX]()
+22. [XXX]()
+23. [XXX]()
+
 ## Wielowątkowość: wątki
 
 ### 1. Kiedy stosować współbieżność?
@@ -845,7 +852,9 @@ void saveToFile(StringQueue & sq) {
 `std::condition_variable` | Opis
 ------------ | -------------
 Cechy | <ul><li> Działa tylko z `std::unique_lock` </li><li> Niekopiowalny </li><li> Wymaga `#include <condition_variable>` </li></ul>
-Najważniejsze operacje | <ul><li> `wait()` – oczekuje na zmianę / blokuje obecny wątek dopóki nie zostanie on wybudzony </li><ul><li> Wątek który zablokował mutex, trafił na `wait()` ale nie otrzymał ani `notify_one()`, ani `notify_all()` **zwalnia mutex** i jest usypiany. Ponadto, mimo że nie było żadnego `notify()` może się on spontanicznie **wybudzić i (spróbować) zablokować z powrotem mutex by sprawdzić czy był `notify()` oraz (opcjonalnie) czy warunek podany w predykacie został spełniony**</li><li> Wymaga przekazania w argumencie: <ul><li> `std::unique_lock` lub... </li><li> `std::unique_lock` oraz predykat </li></ul></li></ul></li><li> `notify_one()` – wybudza jeden z wątków oczekujących na zmianę <ul><li> Nie mamy kontroli nad tym, który z wątków zostanie powiadomiony  </li><li> Jeśli na zmiennej warunku czeka kilka wątków i każdy ma inny predykat, to jego użycie może spowodować zakleszczenie. Wybudzony może zostać wątek, dla którego warunek nie został spełniony i jeśli żaden inny wątek nie zawoła `nofity_one()` lub `notify_all()` to wszystkie będą czekać </li></ul></li><li> `notify_all()` – wybudza wszystkie wątki czekające na zmianę </li><ul><li>  Wątki te mogą konkurować o zasoby </li></ul><li> `wait_for()` - przyjmuje okres czasu po którym naśtąpi wybudzenie </li><ul><li> Opcjonalnie zwraca powód wybudzenia (czy z powodu timeout'u lub nie) </li></ul><li> `wait_until()` - przyjmuje punkt w czasie, w którym nastąpi wybudzenie </li><ul><li> Opcjonalnie zwraca powód wybudzenia (czy z powodu timeout'u lub nie) </li></ul></ul>
+Najważniejsze operacje | <ul><li> `wait()` – oczekuje na zmianę / blokuje obecny wątek dopóki nie zostanie on wybudzony </li><ul><li> Wątek który zablokował mutex, trafił na `wait()` ale nie otrzymał ani `notify_one()`, ani `notify_all()` **zwalnia mutex** i jest usypiany. Ponadto, mimo że nie było żadnego `notify()` może się on spontanicznie **wybudzić i (spróbować) zablokować z powrotem mutex by sprawdzić czy był `notify()` oraz (opcjonalnie) czy warunek podany w predykacie został spełniony**</li><li> Wymaga przekazania w argumencie: <ul><li> `std::unique_lock` lub... </li><li> `std::unique_lock` oraz predykat </li></ul></li></ul></li><li> `notify_one()` – wybudza jeden z wątków oczekujących na zmianę <ul><li> Nie mamy kontroli nad tym, który z wątków zostanie powiadomiony  </li><li> Jeśli na zmiennej warunku czeka kilka wątków i każdy ma inny predykat, to jego użycie może spowodować zakleszczenie. Wybudzony może zostać wątek, dla którego warunek nie został spełniony i jeśli żaden inny wątek nie zawoła `nofity_one()` lub `notify_all()` to wszystkie będą czekać </li></ul></li><li> `notify_all()` – wybudza wszystkie wątki czekające na zmianę </li><ul><li> **Preferowanany wybór**  </li><li>  Wątki te mogą konkurować o zasoby </li></ul><li> `wait_for()` - przyjmuje okres czasu po którym naśtąpi wybudzenie </li><ul><li> Opcjonalnie zwraca powód wybudzenia (czy z powodu timeout'u lub nie) </li></ul><li> `wait_until()` - przyjmuje punkt w czasie, w którym nastąpi wybudzenie </li><ul><li> Opcjonalnie zwraca powód wybudzenia (czy z powodu timeout'u lub nie) </li></ul></ul>
+
+* Jeśli wywołamy którąkolwiek z funkcji `notify()`, a żaden wątek nie czeka (`wait()`) to "stracimy" takiego notify'a.
 
 ### 18. `std::condition_variable_any`
 
@@ -860,4 +869,45 @@ Zagrożenie | Opis
 Fałszywe przebudzenie (spurious wakeup) | <ul><li> Wątek czekający na zmiennej warunku cyklicznie co pewien okres czasu wybudza się i sprawdza czy nie przyszła notyfikacja</li><li> W celu oczekiwania na zmiennej warunku wymagana co najmniej blokada `std::unique_lock`, gdyż podczas uśpienia wątek ją odblokowuje, a gdy wybudza się, aby sprawdzić notyfikację blokuje ją ponownie na chwilę, po czym znów ją odblokowuje i śpi dalej </li><li> Predykat dodany do funkcji `wait()` zapobiega fałszywym przebudzeniom, gdyż dodaje dodatkowy warunek, który musi być spełniony, aby wątek się wybudził </li></ul>
 Utracona notyfikacja (lost wakeup) | <ul><li> Jeśli notyfikacja została wysłana zanim wątek oczekiwał na zmiennej, to jest ona utracona i nie wybudzi ona wątku </li><li> Problem można obejść, gdy pojawi się fałszywe przebudzenie </li><li> Jeśli wątek oczekiwał na zmiennej warunku z predykatem, to predykat musi być spełniony, inaczej fałszywe przebudzenie nie nastąpi </li></ul>
 
+## Komunikacja jednokierunkowa (future, promise)
 
+### 20. Co to?
+
+* `std::future` i `std::promise` razem tworzą jednokierunkowy kanał komunikacji
+    * Za ich pomocą można uzależnić, że jeden wątek nie pójdzie dalej póki inny wątek czegoś nie zrobi
+* Wątek, który "ma coś zrobić" jako argument oprócz lambdy dostaje też `std::promise`
+* Wątek, który ma odebrać wynik obliczeń wywołuje `future.get()`
+
+
+```cpp
+std::promise<int> promise; // typ wyniku
+std::future<int> future = promise.get_future(); 
+// tworzymy future przez wywołanie get_future() na std::promise
+// w ten sposób tworzy się kanał
+
+auto function = [](std::promise<int> promise
+{
+    // ustawiamy promise jakąś wartość
+    promise.set_value(10;)
+}
+
+// do osobnego wątku przekazujemy lambdę z promise'm
+std::thread t(function, std::move(promise));
+
+// inny wątek woła get() by wyłuskać wartość
+std::cout << future.get() << std::endl;
+t.join();
+```
+
+* `std::shared_future` - jeden wątek nadaje, ale wiele odbiera
+
+
+### 21. 
+
+
+
+### 22.
+
+
+
+### 23.
