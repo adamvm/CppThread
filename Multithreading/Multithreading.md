@@ -31,16 +31,16 @@
 18. [`std::condition_variable_any`](#18-stdcondition_variable_any)
 19. [Zagrożenia dla `std::condition_variable` / `std::condition_variable_any`](#19-zagro%C5%BCenia-dla-stdcondition_variable--stdcondition_variable_any)
 
-## [Komunikacja jednokierunkowa (future, promise)]()
+## [Komunikacja jednokierunkowa (future, promise)](#komunikacja-jednokierunkowa-stdfuture-i-stdpromise)
 
-20. [Co to?]()
-21. [Funkcje `std::future`]()
-22. [Obsługa wyjątków w `std::promise`]()
-23. [`std::shared_future`]()
+20. [Co to?](#20-co-to)
+21. [Funkcje `std::future`](#21-funkcje-stdfuture)
+22. [Obsługa wyjątków w `std::promise`](#22-obs%C5%82uga-wyj%C4%85tk%C3%B3w-w-stdpromise)
+23. [`std::shared_future`](#23-stdshared_future)
 
-## [Zadania asynchroniczne (`std::assync`)]()
+## [Zadania asynchroniczne (`std::assync`)](h#zadania-asynchroniczne-stdassync-1)
 
-24. [Co to?]()
+24. [Co to?](#24-co-to)
 25. [XXX]()
 26. [XXX]()
 27. [XXX]()
