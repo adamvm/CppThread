@@ -38,7 +38,7 @@
 22. [Obsługa wyjątków w `std::promise`](#22-obs%C5%82uga-wyj%C4%85tk%C3%B3w-w-stdpromise)
 23. [`std::shared_future`](#23-stdshared_future)
 
-## [Zadania asynchroniczne (`std::assync`)](h#zadania-asynchroniczne-stdassync-1)
+## [Zadania asynchroniczne (`std::assync`)](#zadania-asynchroniczne-stdassync-1)
 
 24. [Opis](#24-opis)
 25. [Polityki uruchamiania](#25-polityki-uruchamiania)
