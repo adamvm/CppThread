@@ -42,8 +42,8 @@
 
 24. [Opis](#24-opis)
 25. [Polityki uruchamiania](#25-polityki-uruchamiania)
-26. [XXX]()
-27. [XXX]()
+26. [Problem domyślnej polityki](#26-problem-domyslnej-polityki)
+27. [`std::packaged_task`](#27-stdpackaged_task)
 
 ## Wielowątkowość: wątki
 
@@ -911,9 +911,9 @@ t.join();
 
 Funkcja | Opis
 ------------ | -------------
-`get()` | <ul><li> **Służy do synchronizacji wątków** tj. jeden wątek nie pójdzie dalej tylko poczeka do momentu aż inny wątek czegoś nie zrobi<ul><li> `get()` czeka na inny wątek **i pobiera jego wynik** </li></ul></li><li> Można wywołać jednokrotnie </li><ul><li> Kolejne wywołanie rzuci wyjątek </li></ul></ul>
+`get()` | <ul><li> **Służy do synchronizacji wątków** tj. jeden wątek nie pójdzie dalej tylko poczeka do momentu aż inny wątek czegoś nie zrobi<ul><li> `get()` czeka na inny wątek **i pobiera jego wynik** </li></ul></li><li> Można wywołać tylko raz </li><ul><li> Kolejne wywołanie rzuci wyjątek </li></ul></ul>
 `valid()` | <ul><li> Zwraca `true` jeśli można go użyć (tzn. można na nim wywołać `get()` lub `wait()` (innymi słowy czy `std::future` nie został już "zużyty")</li></ul>
-`wait()` | <ul><li> **Służy do synchronizacji wątków** tj. jeden wątek nie pójdzie dalej tylko poczeka do momentu aż inny wątek czegoś nie zrobi<ul><li> `wait()` nie pobiera wartości tylko czeka aż będzie dostępna </li></ul></li><li> Można wywołać wielokrotnie </li><ul><li> W przeciwieństwie do `wait()`, `get()` pobiera wartość i można ją wywołać tylko raz </li></ul></ul>
+`wait()` | <ul><li> **Służy do synchronizacji wątków** tj. jeden wątek nie pójdzie dalej tylko poczeka do momentu aż inny wątek czegoś nie zrobi<ul><li> `wait()` nie pobiera wartości tylko czeka aż będzie dostępna </li></ul></li><li> Można wywołać wielokrotnie </li></ul>
 
 ### 22. Obsługa wyjątków w `std::promise`
 
@@ -1018,6 +1018,7 @@ int main()
     
     return 0;
 }
+
 ```
 Wyjście:
 ```bash
@@ -1038,9 +1039,93 @@ Wyjście:
 >> 126
 ```
 
+### 26. Problem domyślnej polityki
 
-### 26. XXX
+Nie można sprawdzić w jaki sposób future (`std::async`) został uruchomiony ale korzystając z `wait_for()` i tego że zwraca 1 z 3 statusów:
+* `future_status::deferred`
+* `future_status::ready`
+* `future_status::timeout`
 
+... można tak zdobyć wynik:
 
+```cpp
+#include <iostream>
+#include <future>
+using namespace std;
 
-### 27. XXX
+void f() {
+  this_thread::sleep_for(1s);
+}
+
+int main() {
+    auto fut = async(f);
+
+    if (fut.wait_for(0s) == future_status::deferred) {
+        cout << "Scheduled as deffered. Calling wait() to enforce execution\n";
+        fut.wait();
+    } else {
+        while (fut.wait_for(100ms) != future_status::ready) {   
+            cout << "Waiting...\n";
+        }
+        cout << "Finally...\n";
+    }
+}
+```
+
+### 27. `std::packaged_task`
+
+* `std::packaged_task` nie wykonuje się od razu (w odróżnieniu od `std::async`), to użytkownik decyduje kiedy to ma się wykonać
+* Przydatne jeśli chcemy do `std::async` przekazać parametry, których jeszcze nie mamy albo inny wątek/funkcja go oblicza
+    *  Wtedy wątek tworzymy dopiero jak już mamy obliczone parametry
+
+```cpp
+auto globalLambda = [](int a, int b) {
+    std::cout << "globalLambda:\n";    
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    return std::pow(a, b); 
+};
+
+// LOKALNE WYWOŁANIE
+
+void localPackagedTask() {
+    std::cout << "\nlocalPackagedTask:\n";
+    std::packaged_task<int(int,int)> task(globalLambda);
+    auto result = task.get_future();
+    
+    std::cout << "before task execution\n";
+    task(2, 9);
+    std::cout << "after task execution\n";
+ 
+    std::cout << "getting result:\t" << result.get() << '\n';
+}
+
+// WYWOŁANIE W INNYM WĄTKU
+
+void remotePackagedTask() {
+    std::cout << "\nremotePackagedTask:\n";
+    std::packaged_task<int(int,int)> task(globalLambda);
+    auto result = task.get_future();
+    
+    std::cout << "before task execution\n";
+    std::thread t(std::move(task), 2, 9);
+    std::cout << "after task execution\n";
+
+    t.detach(); // detach żeby było asynchronicznie (nie join())
+
+    std::cout << "getting result:\t" << result.get() << '\n';
+}
+
+// TO SAMO TYLKO KORZYSTAJĄC Z ASYNC
+
+void remoteAsync() {
+    std::cout << "\nremoteAsync:\n";
+    auto result = std::async(std::launch::async, globalLambda, 2, 9); 
+    std::cout << "getting result:\t" << result.get() << '\n';
+}
+
+int main() {
+    localPackagedTask();
+    remotePackagedTask();
+    remoteAsync();
+}
+```
