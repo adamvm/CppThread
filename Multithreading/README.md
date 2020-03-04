@@ -33,15 +33,15 @@
 
 ## [Komunikacja jednokierunkowa (future, promise)](#komunikacja-jednokierunkowa-stdfuture-i-stdpromise)
 
-20. [Co to?](#20-co-to)
+20. [Opis](#20-opis)
 21. [Funkcje `std::future`](#21-funkcje-stdfuture)
 22. [Obsługa wyjątków w `std::promise`](#22-obs%C5%82uga-wyj%C4%85tk%C3%B3w-w-stdpromise)
 23. [`std::shared_future`](#23-stdshared_future)
 
 ## [Zadania asynchroniczne (`std::assync`)](h#zadania-asynchroniczne-stdassync-1)
 
-24. [Co to?](#24-co-to)
-25. [XXX]()
+24. [Opis](#24-opis)
+25. [Polityki uruchamiania](#25-polityki-uruchamiania)
 26. [XXX]()
 27. [XXX]()
 
@@ -878,7 +878,7 @@ Utracona notyfikacja (lost wakeup) | <ul><li> Jeśli notyfikacja została wysła
 
 ## Komunikacja jednokierunkowa (`std::future` i `std::promise`)
 
-### 20. Co to?
+### 20. Opis
 
 * `std::future` i `std::promise` razem tworzą jednokierunkowy kanał komunikacji między **dwoma wątkami**
 * Wątek, który "ma coś zrobić" jako argument oprócz lambdy dostaje też `std::promise`
@@ -941,22 +941,35 @@ promise.set_exception(std::current_exception());
 
 ## Zadania asynchroniczne (`std::assync`)
 
-### 24. Co to?
+### 24. Opis
 
+* `std::async` to wysokopoziomowe rozwiązanie, które automatycznie zarządza wywołaniami asynchronicznymi z podstawowymi mechanizmami synchronizacji
 * Przykazując funkcję do `std::assync` zwróci on obiekt `std::future` za pomocą którego można się dostać do jego rezultatu (jak tylko będzie on dostępy)
     * Wywołując `get()` przed tym jak zostanie "obliczony" wynik, wątek poczeka na niego...
-* Przyjmuje parametr *policy*: *async* lub *deferred* (**niepodanie żadnego parametru to undefined behaviour (od C++14)** natomiast **podając oba nie wiadomo które wybierze kompilator (zależy od implementacji))**
-    * *async* - ma być wykonane od razu, asynchronicznie (w osobnym wątku)
-    * *deferred* - dopiero jak ktoś wywoła `get()` to zostanie to obliczone (bez dodatkowego wątku)
-    * *async* + *deferred* - 
-* `std::assync` może sam stworzyć wątek (ale nie musi)
 * Obsługa wyjątków przez `std::promise` i `std::future`
 * Wymaga `#include <future>`
-
 ```cpp
 std::future<int> f = std::assync(function)
 std::cout << f.get() << std::endl;
 ```
+
+### 25. Polityki uruchamiania
+
+Przykład wykorzystania:
+
+```cpp
+auto f2 = async(launch::async, []{
+        cout << "f2 started\n";
+        this_thread::sleep_for(1s);
+```
+
+Polityka | Opis
+------------ | -------------
+`std::launch::async` | <ul><li> Wywołanie asynchroniczne w osobnym wątku</li></ul>
+`std::launch::deferred` | <ul><li> Wywołanie funkcji (i obliczenie rezultatu) następuje dopiero po wywołaniu `get()` lub `wait()` </li><li> Wątek wywołujący `get()` lub `wait()` czeka na wątek zwracający wartość (punkt synchronizacji) </li></ul>
+`std::launch::async::deferred` | <ul><li> Wywołanie asynchroniczne w osobnym wątku</li></ul>
+Bez *launch policy* | <ul><li> **Undefined behaviour** (od C++14 - [czytaj](https://en.cppreference.com/w/cpp/thread/async)) </li></ul>
+
 ```cpp
 #include <future>
 #include <vector>
@@ -1024,10 +1037,6 @@ Wyjście:
 >> 84
 >> 126
 ```
-
-
-### 25. XXX
-
 
 
 ### 26. XXX
