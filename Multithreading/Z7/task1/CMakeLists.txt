@@ -13,7 +13,3 @@ target_include_directories(mail PUBLIC 3rdparty/libmail/include)
 add_executable(app src/main.cpp)
 target_link_libraries(app PRIVATE mail Threads::Threads)
 target_compile_options(app PRIVATE -Wall -Werror -Wpedantic -Wextra)
-
-add_executable(solution solution/main.cpp)
-target_link_libraries(solution PRIVATE mail Threads::Threads)
-target_compile_options(solution PRIVATE -Wall -Werror -Wpedantic -Wextra)
