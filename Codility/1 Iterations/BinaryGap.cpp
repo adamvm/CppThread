@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-int solution(int N);
+size_t solution(size_t N);
 
 int main()
 {
@@ -12,7 +12,7 @@ int main()
     return 0;
 }
 
-int solution(int N)
+size_t solution(size_t N)
 {
     int overallMax = 0;
     int localMax = 0;
