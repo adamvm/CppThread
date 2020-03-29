@@ -1,17 +1,7 @@
-# Educational applications
+# Parentheses
 
-This repo is my colletion of C++ experiments.
+## Objective
 
-1. Parentheses
-2. XXX
-3. XXX
-4. XXX
-5. XXX
-
-## 1. Parentheses
-
-[Source code](src/1-parentheses)<br>
-**Description**<br>
 Write a program to determine if the parentheses `( )`, square brackets `[ ]`, and curly braces `{ }` in a string **are balanced**. Balanced means each opening symbol has a corresponding closing symbol and the pairs of brackets are properly nested. For example:
 
 * `{{)(}}` is **not** balanced because `)` comes before `(`
@@ -20,3 +10,19 @@ Write a program to determine if the parentheses `( )`, square brackets `[ ]`, an
 * `{}([])` is balanced
 * `{()}[[{}]]` is balanced
 * `{(([]))]((` is **not** balanced as the last two parentheses are not closed
+
+## Guidelines
+
+* Use Standard Template Library
+* Use TDD methodolody - Catch2 and/or GTest
+
+Project structure:
+
+```
+Parentheses
+  |- src (cpp files)
+  |- inc (hpp files)
+  |- test_catch (cpp files with tests (Catch))
+  |- test_gtest (cpp files with tests (GTest))
+  |- CMakeLists.txt
+```
