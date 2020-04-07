@@ -93,7 +93,7 @@ SCENARIO("Parentheses", "[Parentheses]")
         WHEN("isBalanced() is called")
         {
             auto result = p.isBalanced(input);
-
+            
             THEN("The result is true")
             {
                 CHECK(result == true);

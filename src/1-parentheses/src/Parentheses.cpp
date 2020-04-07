@@ -1,13 +1,13 @@
 #include <algorithm>
+#include <iostream>
 #include <map>
-#include <iterator>
 #include "Parentheses.hpp"
 
 bool Parentheses::isBalanced(std::string s)
-{
+{   
     size_t n = s.size();
-    std::string unallowed[] = {"(}", "[}", "(]", "(]", "{]", "{)", "[)"};
-    std::map<char, int> m {};
+    std::array<std::string, 6> notAllowed = {"(}", "[}", "(]", "{]", "{)", "[)"};
+    std::map<char, int> m;
 
     if (n == 0)
         return true;
@@ -15,28 +15,33 @@ bool Parentheses::isBalanced(std::string s)
     if (n % 2 != 0)
         return false;
 
-    for (int i = 0; i < n - 1; ++i)
-    {
-        std::string temp = s.substr(i, 2);
+    bool containsNotAllowed = std::any_of(notAllowed.begin(), notAllowed.end(), [&](const std::string & obj){
+        auto found = s.find(obj);
+        return (found != std::string::npos);
+    });
 
-        auto search1 = std::any_of(unallowed, unallowed + 6, [&](const std::string & obj){ return obj == temp; });
-        if (search1 != false)
-            return false;
-        
-        auto search2 = m.find(s[i]);
-        if (search2 != m.end())
-            search2->second++;
+    if (containsNotAllowed)
+        return false;
+
+    std::for_each(s.begin(), s.end(), [&](const char & obj){
+        auto search = m.find(obj);
+        if (search != m.end())
+            search->second++;
         else
-            m.insert({s[i], 1});
-    }
+            m.insert({obj, 1});
+    });
 
-    auto sample = 2;
+    auto quasiEnd = m.end();
+    std::advance(quasiEnd, -2);
+
+    for (auto it = m.begin(); it != quasiEnd; it++)
+    {
+        auto tempIt = it;
+        std::advance(tempIt, 1);
+        if (it->second != tempIt->second)
+            return false;
+        it++;
+    }
     
-    if (std::all_of(m.begin(), m.end(), [&](std::pair<char, int> & obj){
-        obj.second == sample; }))
-        return true;
-    else
-        return false;    
-    
-    return false;
+    return true;
 }

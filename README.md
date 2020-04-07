@@ -3,10 +3,7 @@
 This repo is my colletion of C++ experiments.
 
 1. Parentheses
-2. XXX
-3. XXX
-4. XXX
-5. XXX
+2. 
 
 ## 1. Parentheses
 
@@ -20,3 +17,5 @@ Write a program to determine if the parentheses `( )`, square brackets `[ ]`, an
 * `{}([])` is balanced
 * `{()}[[{}]]` is balanced
 * `{(([]))]((` is **not** balanced as the last two parentheses are not closed
+
+Exercise found on [Coders School](https://github.com/coders-school/parentheses) profile.

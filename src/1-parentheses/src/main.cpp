@@ -4,6 +4,5 @@
 int main()
 {
     std::cout << "Parentheses" << std::endl;
-    
     return 0;
 }
