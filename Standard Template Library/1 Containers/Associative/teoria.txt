@@ -1,3 +1,0 @@
-* Sa tylko forward iteratory
-* Wszystkie lementy sa const
-* Jest szybszy dostep bo wykorzystuje kontenery haszujace (zlozonsc stala)
