@@ -1,8 +1,8 @@
 
 ## [Multithreading: threads](#wielow%C4%85tkowo%C5%9B%C4%87-w%C4%85tki-1)
 
-1. [When apply multithreading?](#1-kiedy-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9B%C4%87)
-2. [When do not apply multithreading?](#2-kiedy-nie-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9Bci)
+1. [When apply multithreading](#1-kiedy-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9B%C4%87)
+2. [When do not apply multithreading](#2-kiedy-nie-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9Bci)
 3. [Basic operations on threads](#3-w%C4%85tki-podstawowe-operacje-na-w%C4%85tkach)
 4. [Passing arguments to thread function](#4-przekazywanie-argument%C3%B3w-do-funkcji-w-w%C4%85tku)
 5. [Exceptions in threads](#5-wyj%C4%85tki-w-w%C4%85tkach)
@@ -44,21 +44,21 @@
 26. [Problem domyślnej polityki](#26-problem-domyslnej-polityki)
 27. [`std::packaged_task`](#27-stdpackaged_task)
 
-## Wielowątkowość: wątki
+## Multithreading: threads
 
-### 1. Kiedy stosować współbieżność?
+### 1. When apply multithreading?
 
 * Podział zagadnień
 * Zwiększenie wydajności
   * Zrównoleglenie zadań (podział zadania na części)
   * Zrównoleglenie danych (wykonywanie tych samych zadań na różnych fragmentach danych)
 
-### 2. Kiedy nie stosować współbieżności?
+### 2. When do not apply multithreading
 
 * Gdy zbyt wiele wątków może obniżyć wydajność zamiast ją zwiększyć (koszt uruchomienia wątku, koszt zasobów - każdy wątek zajmuje pamięć)
 * Gdy wzrost wydajności nie jest proporcjonalny do włożonego wysiłku i złożoności kodu (koszt utrzymania kodu)
 
-### 3. Wątki, podstawowe operacje na wątkach
+### 3. Basic operations on threads
 
 Instrukcja | Opis
 ------------ | -------------
@@ -147,7 +147,7 @@ int main()
 }
 ```
 
-### 4. Przekazywanie argumentów do funkcji w wątku
+### 4. Passing arguments to thread function
 
 #### Przekazywanie przez wartość
 
@@ -258,7 +258,7 @@ void oops(int arg)
 }
 ```
 
-### 5. Wyjątki w wątkach
+### 5. Exceptions in threads
 
 * Nie można standardowo złapać wyjątków w innym wątku niż tym, który rzucił wątek
 * Aby przechwycić wyjątek rzucony z innego wątku należy użyć wskaźnika na wyjątek `std::exception_ptr`
@@ -295,7 +295,7 @@ int main()
 }
 ```
 
-### 6. Usypianie wątków
+### 6. Puting thread into sleep
 
 Instrukcja | Opis
 ------------ | -------------
