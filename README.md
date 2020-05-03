@@ -1,12 +1,12 @@
 
-## [Multithreading: threads](#wielow%C4%85tkowo%C5%9B%C4%87-w%C4%85tki-1)
+## [Multithreading: threads](#multithreading-threads-1)
 
-1. [When apply multithreading](#1-kiedy-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9B%C4%87)
-2. [When do not apply multithreading](#2-kiedy-nie-stosowa%C4%87-wsp%C3%B3%C5%82bie%C5%BCno%C5%9Bci)
-3. [Basic operations on threads](#3-w%C4%85tki-podstawowe-operacje-na-w%C4%85tkach)
-4. [Passing arguments to thread function](#4-przekazywanie-argument%C3%B3w-do-funkcji-w-w%C4%85tku)
-5. [Exceptions in threads](#5-wyj%C4%85tki-w-w%C4%85tkach)
-6. [Puting thread into sleep](#6-usypianie-w%C4%85tk%C3%B3w)
+1. [When apply multithreading](#1-when-apply-multithreading)
+2. [When do not apply multithreading](#2-when-do-not-apply-multithreading)
+3. [Basic operations on threads](#3-basic-operations-on-threads)
+4. [Passing arguments to thread function](#4-passing-arguments-to-thread-function)
+5. [Exceptions in threads](#5-exceptions-in-threads)
+6. [Puting thread into sleep](#6-puting-thread-into-sleep)
 
 ## [Współdzielenie danych](#wsp%C3%B3%C5%82dzielenie-danych-1)
 
