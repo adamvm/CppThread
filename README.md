@@ -48,19 +48,19 @@
 
 ### 1. When apply multithreading?
 
-* Podział zagadnień
-* Zwiększenie wydajności
-  * Zrównoleglenie zadań (podział zadania na części)
-  * Zrównoleglenie danych (wykonywanie tych samych zadań na różnych fragmentach danych)
+* Divide work between cores
+* Improvement of performance
+  * Parallelize task (division the task into smaller)
+  * Parallelize data (run same task on multiple data chunks)
 
 ### 2. When do not apply multithreading
 
-* Gdy zbyt wiele wątków może obniżyć wydajność zamiast ją zwiększyć (koszt uruchomienia wątku, koszt zasobów - każdy wątek zajmuje pamięć)
-* Gdy wzrost wydajności nie jest proporcjonalny do włożonego wysiłku i złożoności kodu (koszt utrzymania kodu)
+* When to many parallel tasks can deteriorate overal performance (cost of creating thread, cost of resources - every thread consume memory)
+* When code complexity and effort to introduce threading is higher than performance gain (maintenance cost vs gain)
 
 ### 3. Basic operations on threads
 
-Instrukcja | Opis
+Item | Description
 ------------ | -------------
 `std::thread name(function)` | <ul><li>Żeby pomyślnie utworzyć wątek **należy** przekazać mu: funkcję, funktor, obiekt funkcyjny (jest on kopiowany do wątku), lambdę</li><li> Jeśli wątek nie dostanie żadnej funkcji `std::thread::joinable()` zwróci `false` </li><li> Jeśli nie wywołamy `join()` lub `detach()` otrzymamy `std::terminate` </li><li> Jeśli podczas wykonywania programu wyskoczy wyjątek, nie będzie możliwe złączenie wątku dlatego należy skorzystać z RAII (*Resource Acquisition Is Initialization*) - patrz "[Przykład 2](#przyk%C5%82ad-2)"</li><li> Kopiowanie wątku jest zabronione, możliwe jest natomiast przenoszenie (`std::move`) oraz zwracanie kopii wątku z funkcji (kompilator zoptymalizuje kod i "wyrzuci" zbędne kopiowanie (RVO - *Return Value Optimisation*) </li></ul>
 `std::thread::joinable()` | <ul><li> Zwraca `true` jeśli można zrobić `join()` lub `detach()`</li></ul>
