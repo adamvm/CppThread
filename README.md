@@ -62,14 +62,14 @@
 
 Item | Description
 ------------ | -------------
-`std::thread name(function)` | <ul><li>Żeby pomyślnie utworzyć wątek **należy** przekazać mu: funkcję, funktor, obiekt funkcyjny (jest on kopiowany do wątku), lambdę</li><li> Jeśli wątek nie dostanie żadnej funkcji `std::thread::joinable()` zwróci `false` </li><li> Jeśli nie wywołamy `join()` lub `detach()` otrzymamy `std::terminate` </li><li> Jeśli podczas wykonywania programu wyskoczy wyjątek, nie będzie możliwe złączenie wątku dlatego należy skorzystać z RAII (*Resource Acquisition Is Initialization*) - patrz "[Przykład 2](#przyk%C5%82ad-2)"</li><li> Kopiowanie wątku jest zabronione, możliwe jest natomiast przenoszenie (`std::move`) oraz zwracanie kopii wątku z funkcji (kompilator zoptymalizuje kod i "wyrzuci" zbędne kopiowanie (RVO - *Return Value Optimisation*) </li></ul>
-`std::thread::joinable()` | <ul><li> Zwraca `true` jeśli można zrobić `join()` lub `detach()`</li></ul>
-`std::thread::join()` | <ul><li>Jeśli chcemy poczekać aż wątek zakończy wszystkie swoje obliczenia i chcemy go zsynchronizować w jakimś miejscu</li><li>Program nie pójdzie dalej póki wątek nie zakończy pracy</li></ul>
-`std::thread::detach()` | <ul><li> Nie czekamy na wątek tylko idziemy dalej </li><li> Tracimy nad nim kontrolę, ale on dalej pracuje i zwróci wynik jak skończy (o ile `main()` nie zakończy się szybciej) </li><li> Każdy wątek posiada odrębny stos (adres powrotu z funkcji oraz zmienne lokalne). Wywołując `detach()` wszystko się zwija.</li></ul>
-`std::thread::hardware_concurrency()` | <ul><li> Zwraca ile procesor ma wątków sprzętowych które może obsługiwać jednocześnie</li></ul>
-`std::this_thread::get_id()` | <ul><li> Zwraca id wątku który wykona tą operację </li><li> `std::thread::id this_id = std::this_thread::get_id();`</li></ul>
+`std::thread name(function)` | <ul><li>For thread creation we need to pass: function, functor, function object (it is copied to thread), lambda</li><li> If thread do not receive any function then `std::thread::joinable()` will return `false` </li><li> If we will not call `join()` or `detach()` `std::terminate` will be called </li><li> If during thread life exception will raise, thread join will be not possible. We can use RAII (*Resource Acquisition Is Initialization*) - refer to "[Example 2](#example-2)"</li><li> Thread is non-copiable, we can move it instead (`std::move`)</li></ul>
+`std::thread::joinable()` | <ul><li> Returns `true` if `join()` or `detach()` is possible</li></ul>
+`std::thread::join()` | <ul><li> We can use to wait till thread finish all operations and we want to synchronize </li><li>Program flow will not run further until thread will finish all requested work </li></ul>
+`std::thread::detach()` | <ul><li> Main program runs and thread is detached </li><li> We lose control over the thread, but it continue to run </li><li> Every threads has own stack (return addres from function and local variables). We can use `detach()` for purpose of creating system daemon that runs in system even if main() is already finished </li></ul>
+`std::thread::hardware_concurrency()` | <ul><li> returns value of available hardware units capable to run separated number of threads </li></ul>
+`std::this_thread::get_id()` | <ul><li> Returns thread id that runs this operation </li><li> `std::thread::id this_id = std::this_thread::get_id();`</li></ul>
 
-#### Przykład 1
+#### Example 1
 
 ```cpp
 #include <thread>
@@ -92,17 +92,17 @@ int main() {
     std::thread t1([]() { std:: cout << "Hello World!"; });
 
     std::thread t2(foo);
-    // przekazanie funkcji
+    // pass the function
 
     std::thread t3(&foo);
-    // przekazanie referencji do funkcji
+    // pass the function reference
 
     Bar1 bar1;
     std::thread t4(bar1);
-    // bo przeciążony operator wywołania
+    // overloaded function call operator
 
     std::thread t5(*foo);
-    // przekazanie wskaźnika na funkcję
+    // pass the function pointer 
 
     Bar2 bar2;
     std::thread t6(&Bar2::foo, &bar2);
@@ -116,13 +116,13 @@ int main() {
 }
 ```
 
-#### Przykład 2
+#### Example 2
 
 ```cpp
 /*
-ThreadGuard otrzymuje referencje do wątku i w momencie wyjścia poza zakres sprawdza
-czy `joinable()` zwraca `true`. Jeśli tak to go łączy. Można też użyć move semantics
-i przenieść wątek.
+ThreadGuard use reference to thread. When execution reach end of scope destructor checks
+whether `joinable()` is `true`. If yes then join the thread. Move semantics may be used
+to move the thread.
 */
 class ThreadGuard
 {
@@ -143,7 +143,7 @@ int main()
 {
     std::thread t(fun);
     ThreadGuard g(t);
-    // lub ThreadGuard(std::thread(fun));
+    // or ThreadGuard(std::thread(fun));
 }
 ```
 
