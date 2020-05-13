@@ -149,7 +149,7 @@ int main()
 
 ### 4. Passing arguments to thread function
 
-#### Przekazywanie przez wartość
+#### Pass by value
 
 ```cpp
 Struct SomeStruct { };
@@ -163,14 +163,14 @@ int main() {
 }
 ```
 
-#### Przekazywanie przez referencję
+#### Pass by reference
 
-Jeśli funkcja przyjmuje wartość, a dostanie referencję to to co tak naprawdę się wydarzy to:
+If function expect value and get reference then:
 
-* Stworzy kopię zmiennej
-* ...i przekażemy referencję do kopii (inne wątki nie będą widziały zmian)
+* create variable copy
+* and pass reference to copy (so other threads will not see changes on refered object)
 
-Rozwiązaniem problemu jest zastosowanie *wrapper'a* `std::ref` (lub `std::cref()` dla referencji stałych).
+To be able to use reference in threads *wrapper* `std::ref` should be introduced (or `std::cref()` for const reference).
 
 ```cpp
 void bar(int& x, int* y) {
@@ -190,7 +190,9 @@ int main() {
 }
 ```
 
-**Uwaga! Należy zawsze upewnić się, że długość życia zmiennej do której się odwołujemy zawsze była dłuższa niż długość życia wątku, który na niej operuje.** Przykład:
+**Warning! We should assure that time of refered variable is longer than thread itself**
+
+Example:
 
 ```cpp
 #include <thread>
