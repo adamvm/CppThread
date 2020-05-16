@@ -1,8 +1,8 @@
 
 ## [Multithreading: threads](#multithreading-threads-1)
 
-1. [When apply multithreading](#1-when-apply-multithreading)
-2. [When do not apply multithreading](#2-when-do-not-apply-multithreading)
+1. [When apply multithreading](#1-when-to-apply-multithreading)
+2. [When do not apply multithreading](#2-when-not-to-apply-multithreading)
 3. [Basic operations on threads](#3-basic-operations-on-threads)
 4. [Passing arguments to thread function](#4-passing-arguments-to-thread-function)
 5. [Exceptions in threads](#5-exceptions-in-threads)
@@ -46,14 +46,14 @@
 
 ## Multithreading: threads
 
-### 1. When apply multithreading?
+### 1. When to apply multithreading?
 
 * Divide work between cores
 * Improvement of performance
   * Parallelize task (division the task into smaller)
   * Parallelize data (run same task on multiple data chunks)
 
-### 2. When do not apply multithreading
+### 2. When not to apply multithreading
 
 * When to many parallel tasks can deteriorate overal performance (cost of creating thread, cost of resources - every thread consume memory)
 * When code complexity and effort to introduce threading is higher than performance gain (maintenance cost vs gain)
