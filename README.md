@@ -224,15 +224,15 @@ int main() {
 }
 ```
 
-#### Przekazywanie metody klasy
+#### Pass class method
 
-* Metoda klasy opalana w wątku jako kolejny (ukryty) parametr przyjmuje wkaźnik do obiektu na którym ma zostać wywołana
-    * `std::thread t(&Car::setData, &toyota, 2015, "Corolla")` mimo że, deklaracja funkcji `setData()` to `void setData(int year, const string & model)`
-    * `Corolla` nie wymaga `std::ref()` bo to zmienna tymczasowa (można podpiąć pod `const &`) 
-    * Metoda (funkcja, lambda lub funktor) są kopiowane do pamięci wątku
-    * Parametry są **kopiowane** lub **przenoszone**
+* Class method is run in thread as parameter and takes pointer to object that should be called on
+    * `std::thread t(&Car::setData, &toyota, 2015, "Corolla")` despite that finction declaration of `setData()` is `void setData(int year, const string & model)`
+    * `Corolla` does not require `std::ref()` because it is temporary variable (simillar to `const &`) 
+    * Method (function, lambda or functor) is copied to thread memory
+    * Paramethers are **copied** or **moved**
 
-##### Przykład 1 (pułapka w kodzie)
+##### Example 1 (code smell - potential problem)
 
 ```cpp
 void f(int i, std::string const& s);
@@ -245,9 +245,9 @@ void oops(int arg)
 }
 ```
 
-Niejawna konwersja i potem `detach()`. Najpewniej konwersja z `char[]` na `std::string` nie zdąży się zakończyć.
+Implicit conversion from `char[]` to string and `detach()`. Conversion could be slowlier than `detach()` and we lost reference object.
 
-##### Rozwiązanie:
+##### Solution:
 
 ```cpp
 void f(int i, std::string const& s);
