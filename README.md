@@ -262,11 +262,11 @@ void oops(int arg)
 
 ### 5. Exceptions in threads
 
-* Nie można standardowo złapać wyjątków w innym wątku niż tym, który rzucił wątek
-* Aby przechwycić wyjątek rzucony z innego wątku należy użyć wskaźnika na wyjątek `std::exception_ptr`
-    * Wątek rzucający wyjątek przypisuje do niego `std::current_exception()`
-    * Wątek, który chce złapać wyjątek sprawdza czy `std::current_expection() != 0)`. Jeśli tak, bieżący wątek rzuca dany wyjątek ponownie poprzez `std::rethrow_exception()`
-* Warto używać w wyjątkach funkcji funkcji `noexcept` - wtedy wyjątki nie będą rzucane
+* An exception can be only catch in the same thread where was thrown
+* To handle exception in other thread we should use pointer on exception: `std::exception_ptr`
+    * The thread that throw exception assigns to pointer `std::current_exception()`
+    * The thread that should handle has to check `std::current_expection() != 0)`. If true, then current thread rethrows exception with `std::rethrow_exception()`
+* Usage of `noexcept` can be considered
 
 ```cpp
 #include <iostream>
@@ -299,14 +299,14 @@ int main()
 
 ### 6. Puting thread into sleep
 
-Instrukcja | Opis
+Item | Description
 ------------ | -------------
-`#include <chrono>` | <ul><li>Biblioteka ułatwiające operacje na datach i czasie</li></ul>
-`using namespace std::chrono_literals` | <ul><li> Pozwala na stosowanie skrótów np. 2s lub 2000ms zamiast `std::chrono::seconds(2)` lub `std::chrono::milliseconds(2000)`</li></ul>
-`std::this_thread::sleep_until()` | <ul><li> Usypia wątek do pewnego momentu w czasie</li></ul>
- `std::thread::sleep_for()` | <ul><li> Usypia wątek na jakiś okres czasu </li><li> Wartość podana w argumencie to minimalny gwarantowany czas</li></ul>
+`#include <chrono>` | <ul><li>Library supporting date and time operations</li></ul>
+`using namespace std::chrono_literals` | <ul><li> Let us use short forms e.g. 2s lub 2000ms instead of `std::chrono::seconds(2)` or `std::chrono::milliseconds(2000)`</li></ul>
+`std::this_thread::sleep_until()` | <ul><li> Put the thread into sleep until specified moment of time</li></ul>
+`std::thread::sleep_for()` | <ul><li> Put the thread into sleep for specified time</li><li> Argument value is mimimal guaranteed time</li></ul>
 
-#### Przykład 1
+#### Example 1
 
 ```cpp
 #include <chrono>
